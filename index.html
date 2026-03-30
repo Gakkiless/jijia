@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>松赞 · 产品计价工具</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --primary: #4a3728; --primary-light: #7a5c44; --accent: #c07030;
+    --bg: #f7f5f0; --card: #fff; --border: #f0ebe4; --text: #2d2620;
+    --muted: #999; --success: #27ae60; --warn: #e67e22; --danger: #c0392b; --info: #3498db;
+  }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; min-height: 100vh; }
+
+  .app { display: flex; min-height: 100vh; }
+  .sidebar { width: 460px; min-width: 460px; background: var(--card); border-right: 1px solid var(--border); overflow-y: auto; position: sticky; top: 0; height: 100vh; }
+  .main { flex: 1; padding: 32px; overflow-y: auto; max-height: 100vh; }
+
+  .sidebar-header { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; padding: 24px 20px; }
+  .sidebar-header h1 { font-size: 18px; margin-bottom: 4px; }
+  .sidebar-header .sub { font-size: 12px; opacity: 0.7; }
+
+  .section { padding: 16px 20px; border-bottom: 1px solid var(--border); }
+  .section-title { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+
+  .form-row { margin-bottom: 10px; }
+  .form-label { font-size: 12px; color: #888; margin-bottom: 4px; display: block; }
+  .form-input, .form-select {
+    width: 100%; padding: 8px 12px; border: 1px solid #e0dcd5; border-radius: 8px;
+    font-size: 13px; color: var(--text); background: #faf8f5; transition: border-color 0.2s; outline: none;
+  }
+  .form-input:focus, .form-select:focus { border-color: var(--primary); }
+  .form-row-inline { display: flex; gap: 8px; }
+  .form-row-inline .form-row { flex: 1; }
+
+  /* 编码输入 */
+  .code-input-wrapper { position: relative; }
+  .code-input { font-family: "Courier New", monospace; font-size: 22px; font-weight: 700; letter-spacing: 6px; text-align: center; padding: 14px 16px; }
+  .code-preview {
+    margin-top: 10px; background: #fdf6ed; border-radius: 8px; padding: 10px 14px;
+    font-size: 13px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  }
+  .code-preview .stop { background: rgba(74,55,40,0.1); border-radius: 20px; padding: 3px 10px; font-weight: 600; font-size: 12px; }
+  .code-preview .arrow { opacity: 0.4; font-size: 11px; }
+  .code-meta { font-size: 12px; color: var(--muted); margin-top: 6px; text-align: center; }
+
+  /* 快捷模板 */
+  .template-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .template-tag {
+    padding: 3px 10px; border-radius: 20px; font-size: 11px; background: #faf8f5; border: 1px solid #e8e4dd;
+    cursor: pointer; color: #666; transition: all 0.2s; white-space: nowrap;
+  }
+  .template-tag:hover { border-color: var(--primary); color: var(--primary); background: #fdf6ed; }
+
+  /* 酒店卡片 */
+  .hotel-card { background: #faf8f5; border-radius: 8px; padding: 12px; margin-bottom: 8px; border: 1px solid transparent; transition: border-color 0.2s; }
+  .hotel-card:hover { border-color: #ddd; }
+  .hotel-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .hotel-code { font-family: monospace; font-size: 14px; font-weight: 700; color: var(--accent); background: #fdf4ed; padding: 2px 8px; border-radius: 4px; }
+  .hotel-select { flex: 1; margin-left: 8px; padding: 6px 10px; border: 1px solid #e0dcd5; border-radius: 6px; font-size: 13px; background: #fff; outline: none; }
+  .hotel-select:focus { border-color: var(--primary); }
+  .hotel-detail-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  .hotel-detail-row label { font-size: 11px; color: #888; min-width: 40px; }
+  .hotel-detail-row select, .hotel-detail-row input {
+    flex: 1; padding: 4px 8px; border: 1px solid #e0dcd5; border-radius: 6px; font-size: 12px; outline: none; background: #fff;
+  }
+  .hotel-nights-ctrl { display: flex; align-items: center; gap: 4px; }
+  .hotel-nights-ctrl .nb {
+    display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px;
+    border-radius: 50%; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 13px; transition: all 0.2s;
+  }
+  .hotel-nights-ctrl .nb:hover { border-color: var(--primary); color: var(--primary); }
+  .hotel-nights-ctrl .nv { font-size: 14px; font-weight: 600; min-width: 20px; text-align: center; }
+  .hotel-region { font-size: 11px; color: var(--muted); }
+  .hotel-region .tag { padding: 1px 6px; border-radius: 4px; font-size: 10px; }
+  .hotel-region .tag.xz { background: #eaf4fb; color: #1a6fa0; }
+  .hotel-region .tag.yn { background: #eafaf1; color: #1a8060; }
+  .hotel-region .tag.sc { background: #fdf6e3; color: #b7770d; }
+
+  .btn-row { display: flex; gap: 8px; margin-top: 8px; }
+  .btn-sm { padding: 5px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; border: 1px solid #e0dcd5; background: var(--card); color: var(--text); transition: all 0.2s; }
+  .btn-sm:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-sm.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+  /* 人员 */
+  .person-config { display: flex; gap: 8px; margin-bottom: 8px; }
+  .person-card { flex: 1; background: #faf8f5; border-radius: 8px; padding: 12px; text-align: center; border: 1px solid transparent; }
+  .person-card.active { border-color: var(--primary); background: #fdf6ed; }
+  .person-num { font-size: 22px; font-weight: 700; color: var(--primary); }
+  .person-label { font-size: 11px; color: #888; margin-top: 2px; }
+  .person-btn {
+    display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px;
+    border-radius: 50%; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 16px; margin: 0 4px; transition: all 0.2s;
+  }
+  .person-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+  /* 季节 */
+  .season-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .season-btn { padding: 8px 4px; border-radius: 8px; border: 2px solid transparent; background: #faf8f5; cursor: pointer; text-align: center; transition: all 0.2s; }
+  .season-btn:hover { border-color: #ddd; }
+  .season-btn.active { border-color: var(--primary); background: #fdf6ed; }
+  .season-btn .s-name { font-size: 12px; font-weight: 600; }
+  .season-btn .s-rate { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* 折扣 */
+  .discount-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .discount-card { background: #faf8f5; border-radius: 8px; padding: 14px; text-align: center; border: 2px solid transparent; cursor: pointer; transition: all 0.2s; }
+  .discount-card:hover { border-color: #ddd; }
+  .discount-card.active { border-color: var(--primary); background: #fdf6ed; }
+  .discount-card .d-rate { font-size: 18px; font-weight: 700; color: var(--primary); }
+  .discount-card .d-label { font-size: 11px; color: #888; margin-top: 4px; }
+
+  /* 计算按钮 */
+  .calc-btn {
+    display: block; width: calc(100% - 40px); margin: 16px 20px; padding: 14px; border: none; border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; font-size: 15px; font-weight: 700;
+    cursor: pointer; letter-spacing: 1px; transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .calc-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(74,55,40,0.3); }
+  .calc-btn:active { transform: translateY(0); }
+
+  /* 主内容区 */
+  .result-header { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; border-radius: 12px; padding: 24px 28px; margin-bottom: 24px; }
+  .result-header h2 { font-size: 20px; margin-bottom: 8px; }
+  .result-header .route { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 13px; margin-top: 8px; }
+  .result-header .stop { background: rgba(255,255,255,0.18); border-radius: 20px; padding: 3px 10px; font-weight: 600; }
+  .result-header .arrow { opacity: 0.5; font-size: 11px; }
+  .result-header .meta { font-size: 12px; opacity: 0.7; margin-top: 8px; }
+
+  .card { background: var(--card); border-radius: 12px; padding: 24px 28px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .card h3 { font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
+
+  .cost-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .cost-table th { background: #f5f0ea; padding: 10px 12px; text-align: left; font-weight: 600; color: #5a4030; }
+  .cost-table th:not(:first-child) { text-align: center; }
+  .cost-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  .cost-table td:not(:first-child) { text-align: center; }
+  .cost-table tr:last-child td { border-bottom: none; }
+  .cost-table tr:nth-child(even) td { background: #faf8f5; }
+  .cost-table .total-row td { background: #f5f0ea; font-weight: 700; color: var(--primary); border-top: 2px solid var(--primary); }
+  .cost-table .price-row td { background: #fdf6ed; font-weight: 700; border-top: 2px solid var(--accent); color: var(--accent); font-size: 15px; }
+
+  .price-overview { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+  .price-card { background: #faf8f5; border-radius: 10px; padding: 20px; text-align: center; border: 1px solid var(--border); }
+  .price-card .p-label { font-size: 12px; color: #888; margin-bottom: 8px; }
+  .price-card .p-value { font-size: 28px; font-weight: 700; }
+  .price-card .p-value.adult { color: var(--primary); }
+  .price-card .p-value.child { color: var(--accent); }
+  .price-card .p-value.total { color: var(--success); }
+  .price-card .p-unit { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .season-compare { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .sc-card { border-radius: 8px; padding: 12px; text-align: center; border: 2px solid transparent; }
+  .sc-card.active { border-color: var(--primary); }
+  .sc-card .sc-name { font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+  .sc-card .sc-adult { font-size: 14px; font-weight: 700; color: var(--primary); }
+  .sc-card .sc-child { font-size: 13px; font-weight: 600; color: var(--accent); margin-top: 2px; }
+
+  .empty-state { text-align: center; padding: 80px 40px; color: var(--muted); }
+  .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+  .empty-state .title { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+  .empty-state .desc { font-size: 13px; }
+
+  .notice-list { list-style: none; }
+  .notice-list li { display: flex; align-items: flex-start; gap: 8px; padding: 8px 0; border-bottom: 1px solid #f5f0ea; font-size: 13px; }
+  .notice-list li:last-child { border-bottom: none; }
+  .notice-icon { flex-shrink: 0; margin-top: 1px; }
+
+  .toast { position: fixed; top: 20px; right: 20px; background: var(--primary); color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 13px; z-index: 1000; transform: translateX(120%); transition: transform 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  .toast.show { transform: translateX(0); }
+  .toast.warn { background: var(--warn); }
+
+  @media (max-width: 900px) {
+    .app { flex-direction: column; }
+    .sidebar { width: 100%; min-width: 100%; height: auto; position: relative; }
+    .main { max-height: none; padding: 20px 16px; }
+    .season-compare { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1>🏔 松赞 · 产品计价工具</h1>
+      <div class="sub">输入行程编码，自动解析酒店并计价</div>
+    </div>
+
+    <!-- 行程编码 -->
+    <div class="section">
+      <div class="section-title">📍 行程编码</div>
+      <div class="form-row">
+        <label class="form-label">输入行程简称编码（每个字=1晚，字数=晚数+1=天数）</label>
+        <div class="code-input-wrapper">
+          <input class="form-input code-input" id="routeCode" value="波波百巴巴" placeholder="波波百巴巴" oninput="parseRouteCode()">
+        </div>
+      </div>
+      <div class="code-preview" id="routePreview"></div>
+      <div class="code-meta" id="routeMeta"></div>
+      <div class="template-bar" id="templateBar"></div>
+    </div>
+
+    <!-- 行程类型 -->
+    <div class="section">
+      <div class="section-title">📋 产品形态</div>
+      <div class="form-row-inline">
+        <div class="form-row">
+          <label class="form-label">产品形态</label>
+          <select class="form-select" id="tripType" onchange="onTripTypeChange()">
+            <option value="free">自由行（无管家，活动仅推荐）</option>
+            <option value="private">私享管家（含管家+餐饮）</option>
+            <option value="group">主题团（8-12人拼团）</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label class="form-label">环线（影响预售折扣）</label>
+          <select class="form-select" id="routeLine">
+            <option value="glacier">冰川线</option>
+            <option value="sanjiang">三江线</option>
+            <option value="lhasa" selected>拉萨线</option>
+            <option value="shangri">香格里拉线</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row-inline">
+        <div class="form-row">
+          <label class="form-label">接送机</label>
+          <select class="form-select" id="transferType" onchange="updateCarDays()">
+            <option value="pm_am">下午接机 + 上午送机</option>
+            <option value="am_am">上午接机 + 上午送机（+0.5天）</option>
+            <option value="pm_pm">下午接机 + 下午送机（+0.5天）</option>
+            <option value="am_pm">上午接机 + 下午送机（+1天）</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label class="form-label">车司计费天数</label>
+          <input class="form-input" type="number" id="carDays" value="4" min="0" step="0.5" readonly style="background:#eee;">
+        </div>
+      </div>
+    </div>
+
+    <!-- 人员 -->
+    <div class="section">
+      <div class="section-title">👥 人员配置</div>
+      <div class="person-config">
+        <div class="person-card active">
+          <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:4px;">
+            <button class="person-btn" onclick="changePerson('adult', -1)">−</button>
+            <span class="person-num" id="adultCount">2</span>
+            <button class="person-btn" onclick="changePerson('adult', 1)">+</button>
+          </div>
+          <div class="person-label">成人</div>
+        </div>
+        <div class="person-card">
+          <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:4px;">
+            <button class="person-btn" onclick="changePerson('child', -1)">−</button>
+            <span class="person-num" id="childCount">1</span>
+            <button class="person-btn" onclick="changePerson('child', 1)">+</button>
+          </div>
+          <div class="person-label">儿童</div>
+        </div>
+      </div>
+      <div class="form-row" id="childAgeRow">
+        <label class="form-label">儿童年龄</label>
+        <input class="form-input" type="number" id="childAge" value="11" min="0" max="17">
+      </div>
+      <div class="form-row" id="bedTypeRow">
+        <label class="form-label">儿童床位方式</label>
+        <select class="form-select" id="bedType">
+          <option value="extra">加床（与成人同住）</option>
+          <option value="share">占床（独占1间按成人价）</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 酒店住宿 -->
+    <div class="section">
+      <div class="section-title">🏨 酒店住宿（由编码自动生成，可切换酒店）</div>
+      <div id="hotelList"></div>
+      <div class="btn-row">
+        <button class="btn-sm" onclick="addHotel()">＋ 手动添加酒店</button>
+        <span style="flex:1"></span>
+        <span style="font-size:12px;color:var(--muted);line-height:28px;" id="hotelTotal"></span>
+      </div>
+    </div>
+
+    <!-- 车辆 & 司机 & 管家 -->
+    <div class="section">
+      <div class="section-title">🚗 车辆 / 司机 / 管家</div>
+      <div class="form-row-inline">
+        <div class="form-row">
+          <label class="form-label">车辆成本（元/辆/全程）</label>
+          <input class="form-input" type="number" id="carCost" value="2800" step="10" oninput="updateCarDriverDisplay()">
+        </div>
+        <div class="form-row">
+          <label class="form-label">司机费用（元/天）</label>
+          <input class="form-input" type="number" id="driverCost" value="350" step="10" oninput="updateCarDriverDisplay()">
+        </div>
+      </div>
+      <div class="form-row" id="butlerRow" style="display:none;">
+        <label class="form-label">管家费用（元/天）</label>
+        <input class="form-input" type="number" id="butlerCost" value="400" step="10">
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">
+        车司合计：<strong id="carDriverTotal">4,025</strong> 元/辆（<span id="carDriverCalc">2800 + 350×4</span>）
+        <span id="butlerHint"></span>
+      </div>
+    </div>
+
+    <!-- 人均元素 -->
+    <div class="section">
+      <div class="section-title">📦 人均元素成本</div>
+      <div class="form-row-inline">
+        <div class="form-row">
+          <label class="form-label">活动（元/人）</label>
+          <input class="form-input" type="number" id="activityCost" value="55" step="5">
+        </div>
+        <div class="form-row">
+          <label class="form-label">餐饮（元/人）</label>
+          <input class="form-input" type="number" id="foodCost" value="300" step="10">
+        </div>
+      </div>
+      <div class="form-row-inline">
+        <div class="form-row">
+          <label class="form-label">保险（元/人）</label>
+          <input class="form-input" type="number" id="insuranceCost" value="50" step="5">
+        </div>
+        <div class="form-row">
+          <label class="form-label">零食（元/人）</label>
+          <input class="form-input" type="number" id="snackCost" value="80" step="5">
+        </div>
+      </div>
+    </div>
+
+    <!-- 季节 -->
+    <div class="section">
+      <div class="section-title">📅 季节 & 成本率</div>
+      <div class="season-grid">
+        <div class="season-btn" data-season="peak" onclick="selectSeason('peak')">
+          <div class="s-name">🔴 节日</div><div class="s-rate">成本率 0.80</div><div class="s-rate">利润 20%</div>
+        </div>
+        <div class="season-btn active" data-season="high" onclick="selectSeason('high')">
+          <div class="s-name">🟠 旺季</div><div class="s-rate">成本率 0.825</div><div class="s-rate">利润 17.5%</div>
+        </div>
+        <div class="season-btn" data-season="shoulder" onclick="selectSeason('shoulder')">
+          <div class="s-name">🔵 平季</div><div class="s-rate">成本率 0.85</div><div class="s-rate">利润 15%</div>
+        </div>
+        <div class="season-btn" data-season="low" onclick="selectSeason('low')">
+          <div class="s-name">🟢 淡季</div><div class="s-rate">成本率 0.90</div><div class="s-rate">利润 10%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 预售折扣 -->
+    <div class="section">
+      <div class="section-title">🏷 预售折扣</div>
+      <div id="discountArea"></div>
+    </div>
+
+    <button class="calc-btn" onclick="calculate()">💰 开始计价</button>
+  </aside>
+
+  <main class="main" id="resultArea">
+    <div class="empty-state">
+      <div class="icon">🏔</div>
+      <div class="title">输入行程编码，配置参数后点击「开始计价」</div>
+      <div class="desc">如：波波百巴巴 = 波密→百巴→巴松措×2，4晚5天</div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== 酒店码表（来源：.memory/MEMORY.md） =====
+const HOTEL_DB = {
+  '达': { name: '松赞南迦巴瓦山居', short: '南迦巴瓦', region: '西藏', regionTag: 'xz', defaultRoomType: '豪华大床房', defaultPrice: 0, canExtraBed: true, notes: '房费含南迦巴瓦大峡谷门票', transfer: 'paid' },
+  '石': { name: '松赞石月亮山居', short: '石月亮', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '梅': { name: '松赞梅里山居', short: '梅里', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '香': { name: '松赞香格里拉林卡', short: '香格里拉', region: '云南', regionTag: 'yn', defaultRoomType: '豪华大床/双床房', defaultPrice: 0, canExtraBed: true, notes: '房费含松赞林寺门票；免费接送机', transfer: 'free' },
+  '绿': { name: '松赞绿谷山居', short: '绿谷', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '免费接送机', transfer: 'free' },
+  '塔': { name: '松赞塔城山居', short: '塔城', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '奔': { name: '松赞奔子栏山居', short: '奔子栏', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '丙': { name: '松赞丙中洛山居', short: '丙中洛', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '不提供接送机', transfer: 'none' },
+  '茨': { name: '松赞茨中山居', short: '茨中', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '巴': { name: '松赞巴松措林卡', short: '巴松措', region: '西藏', regionTag: 'xz', defaultRoomType: '高级大/双床房', defaultPrice: 674.25, canExtraBed: true, notes: '', transfer: 'paid' },
+  '拉': { name: '松赞拉萨林卡', short: '拉萨', region: '西藏', regionTag: 'xz', defaultRoomType: '豪华大床房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '日': { name: '日喀则', short: '日喀则', region: '西藏', regionTag: 'xz', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '乃': { name: '松赞乃朗山居', short: '乃朗', region: '西藏', regionTag: 'xz', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '百': { name: '松赞百巴帐篷营地', short: '百巴', region: '西藏', regionTag: 'xz', defaultRoomType: '双床房（唯一标准房型）', defaultPrice: 831.88, canExtraBed: false, notes: '不支持加床', transfer: 'paid' },
+  '来': { name: '松赞来古山居', short: '来古', region: '西藏', regionTag: 'xz', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '不提供接送机', transfer: 'none' },
+  '波': { name: '松赞波密山居', short: '波密', region: '西藏', regionTag: 'xz', defaultRoomType: '湖景豪华大/双床房', defaultPrice: 653.27, canExtraBed: true, notes: '不提供接送机', transfer: 'none' },
+  '墨': { name: '墨脱', short: '墨脱', region: '西藏', regionTag: 'xz', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'none' },
+  '丽': { name: '松赞丽江山居', short: '丽江', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '普': { name: '松赞普洱绿谷', short: '普洱', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '免费接送机', transfer: 'free' },
+  '亚': { name: '松赞亚丁山居', short: '亚丁', region: '四川', regionTag: 'sc', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '泸': { name: '泸沽湖', short: '泸沽湖', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '保': { name: '保山', short: '保山', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '昆': { name: '松赞昆明', short: '昆明', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '如': { name: '松赞如美', short: '如美', region: '西藏', regionTag: 'xz', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'none' },
+};
+
+// ===== 快捷模板 =====
+const TEMPLATES = [
+  { name: '藏东南', code: '波波百巴巴' },
+  { name: '达达巴巴拉拉', code: '达达巴巴拉拉' },
+  { name: '最美四百公里', code: '波波来波达' },
+  { name: '探索生命力量', code: '波波来来波达达' },
+  { name: '三江并流', code: '石石丙丙茨梅香丽' },
+  { name: '雪山桃花圣城', code: '达巴巴拉拉' },
+  { name: '雪山圣湖布达拉', code: '达达巴巴拉拉拉' },
+  { name: '回到远方的家', code: '丽丽塔塔绿绿' },
+  { name: '转山寻酿', code: '塔茨茨奔香' },
+  { name: '朝圣之路', code: '香奔梅梅如如来波波达百巴拉' },
+];
+
+// ===== 季节配置 =====
+const SEASON_CONFIG = {
+  peak:    { name: '节日', costRate: 0.80,  profit: 0.20,  color: '#c0392b', bg: '#fdecea' },
+  high:    { name: '旺季', costRate: 0.825, profit: 0.175, color: '#b7770d', bg: '#fdf6e3' },
+  shoulder:{ name: '平季', costRate: 0.85,  profit: 0.15,  color: '#1a6fa0', bg: '#eaf4fb' },
+  low:     { name: '淡季', costRate: 0.90,  profit: 0.10,  color: '#1a8060', bg: '#eafaf1' }
+};
+
+// ===== 预售折扣配置（按环线 × 长短线） =====
+const PRESELL_CONFIG = {
+  glacier: {
+    long: { label: '冰川长线(≥7晚)', m1: 0.95, m2: 0.90 },
+    short: { label: '冰川短线(<7晚)', m1: 0.98, m2: 0.95 }
+  },
+  sanjiang: {
+    long: { label: '三江长线(≥7晚)', m1: 0.95, m2: 0.90 },
+    short: { label: '三江短线(<7晚)', m1: 0.98, m2: 0.95 }
+  },
+  lhasa: {
+    long: { label: '拉萨长线(≥7晚)', m1: 0.98, m2: 0.95 },
+    short: { label: '拉萨短线(<7晚)', m1: 0.98, m2: 0.95 }
+  },
+  shangri: {
+    long: { label: '香格里拉长线(≥7晚)', m1: 0.98, m2: 0.95 },
+    short: { label: '香格里拉短线(<7晚)', m1: 0.98, m2: 0.95 }
+  }
+};
+
+// ===== 状态 =====
+let state = {
+  hotels: [],
+  season: 'high',
+  discount: 1,
+  adultCount: 2,
+  childCount: 1,
+  childAge: 11,
+  bedType: 'extra',
+  routeNights: 4,
+  routeDays: 5
+};
+
+// ===== 编码解析 =====
+function parseRouteCode() {
+  const code = document.getElementById('routeCode').value.trim();
+  if (!code) {
+    document.getElementById('routePreview').innerHTML = '<span style="color:#999;font-size:12px;">请输入行程编码</span>';
+    document.getElementById('routeMeta').textContent = '';
+    state.hotels = [];
+    renderHotels();
+    return;
+  }
+
+  const chars = [...code]; // 支持中文
+  const unknownChars = chars.filter(c => !HOTEL_DB[c]);
+
+  // 解析酒店（保留顺序，但相同酒店合并晚数）
+  const hotelMap = new Map();
+  chars.forEach(c => {
+    if (HOTEL_DB[c]) {
+      const db = HOTEL_DB[c];
+      const key = db.name;
+      if (!hotelMap.has(key)) hotelMap.set(key, { code: c, ...db, nights: 0 });
+      hotelMap.get(key).nights++;
+    }
+  });
+
+  state.hotels = Array.from(hotelMap.values());
+  state.routeNights = chars.length;
+  state.routeDays = chars.length + 1;
+
+  // 渲染预览（逐站展示）
+  const preview = document.getElementById('routePreview');
+  const stops = chars.map((c, i) => {
+    const name = HOTEL_DB[c] ? HOTEL_DB[c].short : `❓${c}`;
+    const arrow = i < chars.length - 1 ? '<span class="arrow">→</span>' : '';
+    return `<span class="stop">${name}</span>${arrow}`;
+  }).join('');
+
+  let warnHTML = '';
+  if (unknownChars.length > 0) {
+    warnHTML = `<span style="color:var(--warn);font-size:11px;margin-left:8px;">⚠ 未识别：${unknownChars.join('、')}</span>`;
+  }
+
+  preview.innerHTML = stops + warnHTML;
+  document.getElementById('routeMeta').textContent = `${state.routeNights}晚${state.routeDays}天 · ${state.hotels.length}个酒店`;
+
+  renderHotels();
+  updateCarDays();
+  updateDiscountOptions();
+}
+
+// ===== 快捷模板 =====
+function renderTemplates() {
+  const bar = document.getElementById('templateBar');
+  bar.innerHTML = TEMPLATES.map(t =>
+    `<span class="template-tag" onclick="applyTemplate('${t.code}')">${t.name}</span>`
+  ).join('');
+}
+
+function applyTemplate(code) {
+  document.getElementById('routeCode').value = code;
+  parseRouteCode();
+}
+
+// ===== 酒店渲染 =====
+function renderHotels() {
+  const list = document.getElementById('hotelList');
+  // 酒店下拉按区域分组
+  const grouped = {};
+  for (const [code, db] of Object.entries(HOTEL_DB)) {
+    const region = db.region || '其他';
+    if (!grouped[region]) grouped[region] = [];
+    grouped[region].push({ code, ...db });
+  }
+
+  const optionsHTML = Object.entries(grouped).map(([region, hotels]) => {
+    const tag = hotels[0].regionTag || '';
+    return `<optgroup label="── ${region} ──">${
+      hotels.map(h => `<option value="${h.code}">${h.code} — ${h.name}</option>`).join('')
+    }</optgroup>`;
+  }).join('');
+
+  list.innerHTML = state.hotels.map((h, i) => `
+    <div class="hotel-card">
+      <div class="hotel-top">
+        <span class="hotel-code">${h.code}</span>
+        <select class="hotel-select" onchange="changeHotelName(${i}, this.value)">
+          ${Object.entries(HOTEL_DB).map(([code, db]) =>
+            `<option value="${code}" ${code === h.code ? 'selected' : ''}>${code} — ${db.name}</option>`
+          ).join('')}
+        </select>
+        <button class="btn-sm danger" onclick="removeHotel(${i})" style="padding:2px 8px;font-size:11px;flex-shrink:0;">✕</button>
+      </div>
+      <div class="hotel-detail-row">
+        <label>房型</label>
+        <input value="${h.roomType || h.defaultRoomType}" onchange="state.hotels[${i}].roomType=this.value" placeholder="房型名称">
+        <span class="hotel-region"><span class="tag ${h.regionTag}">${h.region}</span></span>
+      </div>
+      <div class="hotel-detail-row">
+        <label>单价</label>
+        <input type="number" value="${h.price != null ? h.price : h.defaultPrice}" step="0.01" onchange="state.hotels[${i}].price=parseFloat(this.value)||0" placeholder="元/晚" style="max-width:140px;">
+        <span style="font-size:11px;color:#888;">元/晚</span>
+        <label style="margin-left:12px;">晚数</label>
+        <div class="hotel-nights-ctrl">
+          <button class="nb" onclick="changeNights(${i}, -1)">−</button>
+          <span class="nv">${h.nights}</span>
+          <button class="nb" onclick="changeNights(${i}, 1)">+</button>
+        </div>
+      </div>
+      ${h.notes ? `<div style="font-size:11px;color:var(--warn);margin-top:4px;">⚠ ${h.notes}</div>` : ''}
+    </div>
+  `).join('');
+
+  const totalNights = state.hotels.reduce((s, h) => s + h.nights, 0);
+  document.getElementById('hotelTotal').textContent = `合计 ${totalNights} 晚`;
+}
+
+function changeHotelName(i, code) {
+  const db = HOTEL_DB[code];
+  if (!db) return;
+  state.hotels[i] = { code, name: db.name, short: db.short, region: db.region, regionTag: db.regionTag, defaultRoomType: db.defaultRoomType, defaultPrice: db.defaultPrice, roomType: db.defaultRoomType, price: db.defaultPrice, canExtraBed: db.canExtraBed, notes: db.notes, transfer: db.transfer, nights: state.hotels[i].nights };
+  renderHotels();
+}
+
+function changeNights(i, delta) {
+  const n = state.hotels[i].nights + delta;
+  if (n < 1) return;
+  state.hotels[i].nights = n;
+  renderHotels();
+  updateCarDays();
+  updateDiscountOptions();
+}
+
+function addHotel() {
+  const firstCode = '波';
+  const db = HOTEL_DB[firstCode];
+  state.hotels.push({ code: firstCode, name: db.name, short: db.short, region: db.region, regionTag: db.regionTag, defaultRoomType: db.defaultRoomType, defaultPrice: db.defaultPrice, roomType: db.defaultRoomType, price: db.defaultPrice, canExtraBed: db.canExtraBed, notes: db.notes, transfer: db.transfer, nights: 1 });
+  renderHotels();
+  updateCarDays();
+  updateDiscountOptions();
+}
+
+function removeHotel(i) {
+  state.hotels.splice(i, 1);
+  renderHotels();
+  updateCarDays();
+  updateDiscountOptions();
+}
+
+// ===== 人员 =====
+function changePerson(type, delta) {
+  if (type === 'adult') {
+    state.adultCount = Math.max(1, Math.min(10, state.adultCount + delta));
+    document.getElementById('adultCount').textContent = state.adultCount;
+  } else {
+    state.childCount = Math.max(0, Math.min(5, state.childCount + delta));
+    document.getElementById('childCount').textContent = state.childCount;
+  }
+  toggleChildFields();
+}
+
+function toggleChildFields() {
+  const show = state.childCount > 0;
+  document.getElementById('childAgeRow').style.display = show ? '' : 'none';
+  document.getElementById('bedTypeRow').style.display = show ? '' : 'none';
+  document.querySelectorAll('.person-card').forEach(c => c.classList.remove('active'));
+  if (state.childCount > 0) document.querySelectorAll('.person-card').forEach(c => c.classList.add('active'));
+  else document.querySelector('.person-card').classList.add('active');
+}
+
+// ===== 产品形态 =====
+function onTripTypeChange() {
+  const type = document.getElementById('tripType').value;
+  document.getElementById('butlerRow').style.display = (type === 'private' || type === 'group') ? '' : 'none';
+  document.getElementById('butlerHint').textContent = (type === 'private' || type === 'group') ? '  |  管家已包含' : '';
+  updateCarDays();
+}
+
+// ===== 车司天数 =====
+function updateCarDays() {
+  const type = document.getElementById('tripType').value;
+  const transfer = document.getElementById('transferType').value;
+  const totalNights = state.hotels.reduce((s, h) => s + h.nights, 0);
+
+  let base;
+  if (type === 'free') {
+    // 自由行：行程天数 − 0.5
+    base = totalNights + 1 - 0.5;
+  } else {
+    // 主题团/私享：按接送机组合
+    base = totalNights; // 下午接+上午送
+    if (transfer === 'am_am' || transfer === 'pm_pm') base += 0.5;
+    if (transfer === 'am_pm') base += 1;
+  }
+
+  document.getElementById('carDays').value = base.toFixed(1);
+  updateCarDriverDisplay();
+}
+
+function updateCarDriverDisplay() {
+  const car = parseFloat(document.getElementById('carCost').value) || 0;
+  const driver = parseFloat(document.getElementById('driverCost').value) || 0;
+  const days = parseFloat(document.getElementById('carDays').value) || 0;
+  const total = car + driver * days;
+  document.getElementById('carDriverTotal').textContent = total.toLocaleString();
+  document.getElementById('carDriverCalc').textContent = `${car} + ${driver}×${days}`;
+}
+
+// ===== 季节 & 折扣 =====
+function selectSeason(s) {
+  state.season = s;
+  document.querySelectorAll('.season-btn').forEach(b => b.classList.toggle('active', b.dataset.season === s));
+}
+
+function updateDiscountOptions() {
+  const line = document.getElementById('routeLine').value;
+  const nights = state.hotels.reduce((s, h) => s + h.nights, 0);
+  const isLong = nights >= 7;
+  const cfg = PRESELL_CONFIG[line][isLong ? 'long' : 'short'];
+
+  const area = document.getElementById('discountArea');
+  const discounts = [
+    { rate: 1, label: '无折扣', sub: '原价' },
+    { rate: cfg.m1, label: `${Math.round(cfg.m1*100)}折`, sub: `提前1个月 · ${cfg.label}` },
+    { rate: cfg.m2, label: `${Math.round(cfg.m2*100)}折`, sub: `提前2个月 · ${cfg.label}` }
+  ];
+
+  const currentDiscount = state.discount;
+  const hasCurrent = discounts.some(d => d.rate === currentDiscount);
+  if (!hasCurrent) state.discount = 1;
+
+  area.innerHTML = `<div style="font-size:11px;color:var(--muted);margin-bottom:8px;">当前环线：${cfg.label}（${nights}晚，${isLong ? '≥7晚长线' : '<7晚短线'}）</div><div class="discount-grid">${
+    discounts.map(d => `
+      <div class="discount-card ${d.rate === state.discount ? 'active' : ''}" onclick="selectDiscount(${d.rate})">
+        <div class="d-rate">${d.label}</div>
+        <div class="d-label">${d.sub}</div>
+      </div>
+    `).join('')
+  }</div>`;
+}
+
+function selectDiscount(d) {
+  state.discount = d;
+  updateDiscountOptions();
+}
+
+// ===== Toast =====
+function showToast(msg, warn) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (warn ? ' warn' : '');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ===== 核心计价 =====
+function calculate() {
+  const sc = SEASON_CONFIG[state.season];
+  const adultCount = state.adultCount;
+  const childCount = state.childCount;
+
+  if (state.hotels.length === 0) { showToast('请输入行程编码或添加酒店', true); return; }
+  const totalNights = state.hotels.reduce((s, h) => s + h.nights, 0);
+  if (totalNights === 0) { showToast('酒店晚数不能为0', true); return; }
+
+  // 获取输入
+  const carCost = parseFloat(document.getElementById('carCost').value) || 0;
+  const driverDaily = parseFloat(document.getElementById('driverCost').value) || 0;
+  const carDays = parseFloat(document.getElementById('carDays').value) || 0;
+  const butlerDaily = (document.getElementById('tripType').value !== 'free') ? (parseFloat(document.getElementById('butlerCost').value) || 0) : 0;
+  const activityCost = parseFloat(document.getElementById('activityCost').value) || 0;
+  const foodCost = parseFloat(document.getElementById('foodCost').value) || 0;
+  const insuranceCost = parseFloat(document.getElementById('insuranceCost').value) || 0;
+  const snackCost = parseFloat(document.getElementById('snackCost').value) || 0;
+  const childAge = parseInt(document.getElementById('childAge').value) || 0;
+  const bedType = document.getElementById('bedType').value;
+  const tripType = document.getElementById('tripType').value;
+  const tripTypeLabel = { free: '自由行', private: '私享管家', group: '主题团' }[tripType];
+
+  // 1. 酒店总成本
+  const hotelTotalCost = state.hotels.reduce((s, h) => s + (h.price || 0) * h.nights, 0);
+
+  // 2. 车司合计
+  const driverCost = driverDaily * carDays;
+  const carDriverTotal = carCost + driverCost;
+
+  // 3. 管家
+  const butlerTotal = butlerDaily * carDays;
+
+  // 4. 儿童餐饮折扣
+  let childFoodRate = childAge < 6 ? 0.3 : childAge <= 11 ? 0.7 : 1.0;
+
+  // 5. 成人均摊
+  const hotelPerAdult = hotelTotalCost / adultCount;
+  const carDriverPerAdult = carDriverTotal / adultCount;
+  const butlerPerAdult = butlerTotal / adultCount;
+  const elementPerAdult = activityCost + foodCost + insuranceCost + snackCost;
+  const adultTotalCost = hotelPerAdult + carDriverPerAdult + butlerPerAdult + elementPerAdult;
+  const adultPrice = adultTotalCost / sc.costRate;
+
+  // 6. 儿童
+  let childTotalCost = 0, childPrice = 0;
+  if (childCount > 0) {
+    const childHotelCost = bedType === 'share' ? hotelTotalCost : 0;
+    const childFood = foodCost * childFoodRate;
+    const childElementCost = activityCost + childFood + insuranceCost + snackCost;
+    childTotalCost = childHotelCost + childElementCost;
+    childPrice = childTotalCost / sc.costRate;
+  }
+
+  // 7. 折扣
+  const adultPriceFinal = Math.round(adultPrice * state.discount);
+  const childPriceFinal = childCount > 0 ? Math.round(childPrice * state.discount) : 0;
+  const roomTotal = adultPriceFinal * adultCount + childPriceFinal * childCount;
+
+  // 8. 注意事项
+  const notices = [];
+  state.hotels.forEach(h => {
+    if (!h.canExtraBed && bedType === 'extra') {
+      notices.push({ type: 'warn', text: `${h.name}（${h.code}）不支持加床，需提前确认` });
+    }
+    if (h.notes) notices.push({ type: 'info', text: `${h.short}（${h.code}）：${h.notes}` });
+  });
+  if (tripType === 'free') notices.push({ type: 'ok', text: `自由行用车天数 ${carDays} 天（${totalNights + 1}天行程 − 0.5天）` });
+  if (butlerDaily > 0) notices.push({ type: 'ok', text: `包含管家服务：${butlerDaily}元/天 × ${carDays}天 = ${butlerTotal.toLocaleString()}元（成人平摊）` });
+  if (childAge >= 12) notices.push({ type: 'info', text: '12岁+餐饮按成人价计算' });
+  if (childCount > 0) notices.push({ type: 'ok', text: '儿童不分摊车司管费用（由同行成人承担）' });
+  if (state.discount < 1) notices.push({ type: 'info', text: `预售折扣 ${Math.round(state.discount * 100)}%，原价：成人 ¥${Math.round(adultPrice).toLocaleString()}/人` });
+
+  // 9. 四季对比
+  const seasonPrices = {};
+  for (const [key, cfg] of Object.entries(SEASON_CONFIG)) {
+    seasonPrices[key] = {
+      adult: Math.round((adultTotalCost / cfg.costRate) * state.discount),
+      child: childCount > 0 ? Math.round((childTotalCost / cfg.costRate) * state.discount) : 0
+    };
+  }
+
+  renderResult({
+    tripTypeLabel, totalNights, totalDays: totalNights + 1, adultCount, childCount,
+    childAge, bedType, bedTypeLabel: bedType === 'extra' ? '加床' : '占床',
+    hotels: state.hotels, hotelTotalCost,
+    carCost, driverDaily, carDays, driverCost, carDriverTotal,
+    butlerDaily, butlerTotal, butlerPerAdult,
+    activityCost, foodCost, insuranceCost, snackCost,
+    hotelPerAdult, carDriverPerAdult, elementPerAdult,
+    adultTotalCost, adultPrice: Math.round(adultPrice), adultPriceFinal,
+    childTotalCost, childPrice: childCount > 0 ? Math.round(childPrice) : 0, childPriceFinal,
+    childFoodRate, roomTotal,
+    season: state.season, seasonConfig: sc, seasonPrices,
+    discount: state.discount, notices
+  });
+}
+
+// ===== 渲染结果 =====
+function renderResult(r) {
+  const area = document.getElementById('resultArea');
+  const hotelRows = r.hotels.map(h => `
+    <tr>
+      <td><span style="font-family:monospace;color:var(--accent);background:#fdf4ed;padding:1px 6px;border-radius:4px;font-size:12px;">${h.code}</span> <strong>${h.short}</strong></td>
+      <td>${h.nights}</td>
+      <td>${(h.price || 0).toFixed(2)}</td>
+      <td>${((h.price || 0) * h.nights).toFixed(2)}</td>
+      <td><span style="font-size:11px;color:#888;">${h.roomType || h.defaultRoomType}</span> <span class="tag ${h.regionTag}" style="padding:1px 5px;border-radius:4px;font-size:10px;">${h.region}</span></td>
+    </tr>`).join('');
+
+  const butlerSection = r.butlerDaily > 0 ? `
+    <tr style="background:#fdf6ed;"><td colspan="5" style="font-weight:700;color:var(--primary);padding:14px 12px;">🧳 管家</td></tr>
+    <tr><td>管家费用</td><td>${r.carDays}天 × ${r.butlerDaily}</td><td>${r.butlerDaily}</td><td>${r.butlerPerAdult.toFixed(2)}</td><td style="font-size:12px;color:#888;">成人平摊</td></tr>` : '';
+
+  const childHTML = r.childCount > 0 ? `
+    <tr style="background:#fdf6ed;"><td colspan="5" style="font-weight:700;color:var(--accent);padding:14px 12px;">👦 儿童成本（${r.childAge}岁 · ${r.bedTypeLabel}）</td></tr>
+    <tr><td>酒店</td><td>—</td><td>—</td><td>${r.bedType === 'share' ? r.hotelTotalCost.toFixed(2) : '0.00'}</td><td style="font-size:12px;color:#888;">${r.bedType === 'extra' ? '加床不额外计费' : '独占一间'}</td></tr>
+    <tr><td>车司 + 管家</td><td>—</td><td>—</td><td>0.00</td><td style="font-size:12px;color:#888;">儿童不分摊</td></tr>
+    <tr><td>活动</td><td></td><td>${r.activityCost}</td><td>${r.activityCost}</td><td style="font-size:12px;color:#888;">同成人</td></tr>
+    <tr><td>餐饮</td><td></td><td>${r.foodCost} × ${Math.round(r.childFoodRate*100)}%</td><td>${(r.foodCost * r.childFoodRate).toFixed(2)}</td><td style="font-size:12px;color:#888;">${r.childAge < 6 ? '<6岁3折' : r.childAge <= 11 ? '6-11岁7折' : '12岁+同成人'}</td></tr>
+    <tr><td>保险</td><td></td><td>${r.insuranceCost}</td><td>${r.insuranceCost}</td><td style="font-size:12px;color:#888;">同成人</td></tr>
+    <tr><td>零食</td><td></td><td>${r.snackCost}</td><td>${r.snackCost}</td><td style="font-size:12px;color:#888;">同成人</td></tr>
+    <tr class="total-row"><td>儿童成本合计</td><td></td><td></td><td>${r.childTotalCost.toFixed(2)}</td><td></td></tr>
+    <tr class="price-row"><td>÷ ${r.seasonConfig.costRate}${r.discount < 1 ? ` × ${Math.round(r.discount*100)}%` : ''}</td><td></td><td></td><td>= <strong>¥${r.childPriceFinal.toLocaleString()}</strong></td><td style="font-size:12px;">打包价</td></tr>
+  ` : '';
+
+  const seasonCards = Object.entries(SEASON_CONFIG).map(([k, c]) => `
+    <div class="sc-card ${k === r.season ? 'active' : ''}" style="background:${c.bg};">
+      <div class="sc-name">${c.name}</div>
+      <div class="sc-adult">¥${r.seasonPrices[k].adult.toLocaleString()}</div>
+      ${r.childCount > 0 ? `<div class="sc-child">儿童 ¥${r.seasonPrices[k].child.toLocaleString()}</div>` : ''}
+    </div>`).join('');
+
+  const noticeHTML = r.notices.map(n => `<li><span class="notice-icon">${n.type==='warn'?'⚠️':n.type==='ok'?'✅':'ℹ️'}</span><span>${n.text}</span></li>`).join('');
+
+  area.innerHTML = `
+    <div class="result-header">
+      <h2>${r.tripTypeLabel} · ${r.seasonConfig.name}计价</h2>
+      <div class="meta">${r.totalDays}天${r.totalNights}晚 · ${r.adultCount}成人${r.childCount > 0 ? ` + ${r.childCount}儿童(${r.childAge}岁·${r.bedTypeLabel})` : ''} · 成本率 ${(r.seasonConfig.costRate*100).toFixed(1)}%</div>
+      <div class="route">${r.hotels.map((h,i) => `<span class="stop">${h.short}</span>${i<r.hotels.length-1?'<span class="arrow">→</span>':''}`).join('')}</div>
+    </div>
+    <div class="card">
+      <h3>💰 报价总览${r.discount < 1 ? `（预售${Math.round(r.discount*100)}折）` : ''}</h3>
+      <div class="price-overview">
+        <div class="price-card"><div class="p-label">成人价/人</div><div class="p-value adult">¥${r.adultPriceFinal.toLocaleString()}</div>${r.discount < 1 ? `<div class="p-unit">原价 ¥${r.adultPrice.toLocaleString()}</div>` : ''}</div>
+        ${r.childCount > 0 ? `<div class="price-card"><div class="p-label">儿童价/人</div><div class="p-value child">¥${r.childPriceFinal.toLocaleString()}</div>${r.discount < 1 ? `<div class="p-unit">原价 ¥${r.childPrice.toLocaleString()}</div>` : ''}</div>` : ''}
+        <div class="price-card"><div class="p-label">${r.adultCount}大${r.childCount > 0 ? r.childCount+'小' : ''} 总计</div><div class="p-value total">¥${r.roomTotal.toLocaleString()}</div><div class="p-unit">房间内总价</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>📅 四季对比</h3>
+      <div class="season-compare">${seasonCards}</div>
+    </div>
+    <div class="card">
+      <h3>🔍 成本拆解</h3>
+      <table class="cost-table">
+        <thead><tr><th>元素</th><th>晚数/天数</th><th>单价</th><th>每成人成本</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr style="background:#fdf6ed;"><td colspan="5" style="font-weight:700;color:var(--primary);padding:14px 12px;">🏨 酒店住宿</td></tr>
+          ${hotelRows}
+          <tr class="total-row"><td>酒店合计（${r.totalNights}晚）</td><td></td><td></td><td>${r.hotelTotalCost.toFixed(2)}</td><td></td></tr>
+          <tr style="background:#fdf6ed;"><td colspan="5" style="font-weight:700;color:var(--primary);padding:14px 12px;">🚗 车辆 & 司机</td></tr>
+          <tr><td>车辆</td><td></td><td>${r.carCost.toFixed(2)}</td><td>${(r.carCost/r.adultCount).toFixed(2)}</td><td style="font-size:12px;color:#888;">成人平摊</td></tr>
+          <tr><td>司机</td><td>${r.carDays}天 × ${r.driverDaily}</td><td>${r.driverDaily}</td><td>${(r.driverCost/r.adultCount).toFixed(2)}</td><td style="font-size:12px;color:#888;">成人平摊</td></tr>
+          <tr class="total-row"><td>车司合计</td><td></td><td></td><td>${r.carDriverTotal.toFixed(2)}</td><td></td></tr>
+          ${butlerSection}
+          <tr style="background:#fdf6ed;"><td colspan="5" style="font-weight:700;color:var(--primary);padding:14px 12px;">📦 人均元素</td></tr>
+          <tr><td>活动</td><td></td><td>${r.activityCost}</td><td>${r.activityCost}</td><td style="font-size:12px;color:#888;">儿童同价</td></tr>
+          <tr><td>餐饮</td><td></td><td>${r.foodCost}</td><td>${r.foodCost}</td><td style="font-size:12px;color:#888;">儿童按年龄打折</td></tr>
+          <tr><td>保险</td><td></td><td>${r.insuranceCost}</td><td>${r.insuranceCost}</td><td style="font-size:12px;color:#888;">人均</td></tr>
+          <tr><td>零食</td><td></td><td>${r.snackCost}</td><td>${r.snackCost}</td><td style="font-size:12px;color:#888;">人均</td></tr>
+          <tr class="total-row"><td>成人成本合计</td><td></td><td></td><td>${r.adultTotalCost.toFixed(2)}</td><td></td></tr>
+          <tr class="price-row"><td>÷ ${r.seasonConfig.costRate}${r.discount < 1 ? ` × ${Math.round(r.discount*100)}%` : ''}</td><td></td><td></td><td>= <strong>¥${r.adultPriceFinal.toLocaleString()}</strong></td><td style="font-size:12px;">打包价</td></tr>
+          ${childHTML}
+        </tbody>
+      </table>
+    </div>
+    <div class="card"><h3>⚠️ 注意事项</h3><ul class="notice-list">${noticeHTML}</ul></div>
+    <div style="text-align:center;color:#bbb;font-size:12px;margin-top:32px;padding-top:16px;border-top:1px solid #eee;">
+      松赞产品计价工具 · ${new Date().toLocaleDateString('zh-CN')} · 仅供内部参考
+    </div>`;
+}
+
+// ===== 初始化 =====
+document.getElementById('routeLine').addEventListener('change', updateDiscountOptions);
+document.getElementById('carCost').addEventListener('input', updateCarDriverDisplay);
+document.getElementById('driverCost').addEventListener('input', updateCarDriverDisplay);
+document.getElementById('butlerCost').addEventListener('input', updateCarDriverDisplay);
+
+renderTemplates();
+parseRouteCode();
+toggleChildFields();
+updateCarDriverDisplay();
+</script>
+</body>
+</html>
