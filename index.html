@@ -312,12 +312,12 @@
         <div style="font-size:11px;color:var(--accent);font-weight:600;margin-top:6px;" id="driverSectionTotal"></div>
       </div>
 
-      <!-- 管家 & 活动管家 -->
+      <!-- 管家 -->
       <div class="section">
-        <div class="section-title">🧑‍💼 管家 & 活动管家</div>
-        <div class="section-sub" id="butlerSub">私享管家含管家日薪+活动管家日薪；主题团含活动管家日薪</div>
+        <div class="section-title">🧑‍💼 管家</div>
+        <div class="section-sub" id="butlerSub">管家费用 = 管家数量 × 行程天数 × 管家日薪</div>
         <div id="butlerList"></div>
-        <div class="add-btn" onclick="addButler()" style="margin-top:8px;">＋ 添加管家档</div>
+        <div class="add-btn" onclick="addButler()" style="margin-top:8px;">＋ 添加管家</div>
         <div style="font-size:11px;color:var(--accent);font-weight:600;margin-top:6px;" id="butlerSectionTotal"></div>
       </div>
 
@@ -517,7 +517,7 @@ let state = {
   hotels: [],
   cars: [],                 // [{id, type, count, pricePer}]
   drivers: [],              // [{id, count, dailyRate}]
-  butlers: [],              // [{id, type, count, dailyRate}]  type: '管家'|'活动管家'
+  butlers: [],              // [{id, count, dailyRate}]
   activities: [],           // [{id, name, pricePer, count}]
   routeDays: 5,
   routeNights: 4,
@@ -752,8 +752,7 @@ function changeDriverCount(i, d) {
 // 管家
 // ============================================================
 function addButler() {
-  const defaultType = state.tripType === 'free' ? '活动管家' : '管家';
-  state.butlers.push({ id: ++_butlerId, type: defaultType, count: 1, dailyRate: 400 });
+  state.butlers.push({ id: ++_butlerId, count: 1, dailyRate: 400 });
   renderButlers();
 }
 function removeButler(id) {
@@ -763,19 +762,12 @@ function removeButler(id) {
 function renderButlers() {
   const list = document.getElementById('butlerList');
   if (state.butlers.length === 0) {
-    list.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px;">暂无管家（根据产品形态自动包含）</div>';
+    list.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px;">暂无管家（选"私享管家"或"主题团"会自动包含）</div>';
     document.getElementById('butlerSectionTotal').textContent = '';
     return;
   }
   list.innerHTML = state.butlers.map((b, i) => `
     <div class="item-card">
-      <div class="item-header">
-        <select style="flex:1;padding:5px 7px;border:1px solid #e0dcd5;border-radius:6px;font-size:12px;background:#fff;" onchange="state.butlers[${i}].type=this.value;renderButlers()">
-          <option value="管家" ${b.type === '管家' ? 'selected' : ''}>管家（私享管家含）</option>
-          <option value="活动管家" ${b.type === '活动管家' ? 'selected' : ''}>活动管家</option>
-        </select>
-        <button class="item-del" onclick="removeButler(${b.id})">✕</button>
-      </div>
       <div class="item-row">
         <label>人数</label>
         <button style="width:22px;height:22px;border-radius:50%;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:12px;" onclick="changeButlerCount(${i},-1)">−</button>
@@ -786,6 +778,7 @@ function renderButlers() {
         <span style="font-size:11px;color:#888;">元/人/天</span>
       </div>
       <div class="item-sub">${b.count}人 × ${state.carDays}天 × ${b.dailyRate}元 = <strong style="color:var(--accent);">¥${(b.count * state.carDays * b.dailyRate).toLocaleString()}</strong></div>
+      <button class="item-del" onclick="removeButler(${b.id})">✕</button>
     </div>
   `).join('');
   const total = state.butlers.reduce((s, b) => s + b.count * state.carDays * b.dailyRate, 0);
@@ -862,17 +855,13 @@ function setTripType(type) {
   state.tripType = type;
   document.querySelectorAll('.trip-type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === type));
   const sub = document.getElementById('butlerSub');
-  if (type === 'private') sub.textContent = '私享管家含管家日薪+活动管家日薪';
-  else if (type === 'group') sub.textContent = '主题团含活动管家日薪（8-12人）';
-  else sub.textContent = '自由行无管家，可手动添加活动管家';
+  if (type === 'private') sub.textContent = '私享管家形态包含管家服务';
+  else if (type === 'group') sub.textContent = '主题团形态包含管家服务';
+  else sub.textContent = '自由行无管家，可手动添加';
 
   // 自动添加默认管家
-  if (type === 'private' && state.butlers.length === 0) {
-    state.butlers.push({ id: ++_butlerId, type: '管家', count: 1, dailyRate: 400 });
-    state.butlers.push({ id: ++_butlerId, type: '活动管家', count: 1, dailyRate: 350 });
-    renderButlers();
-  } else if (type === 'group' && state.butlers.length === 0) {
-    state.butlers.push({ id: ++_butlerId, type: '活动管家', count: 1, dailyRate: 350 });
+  if ((type === 'private' || type === 'group') && state.butlers.length === 0) {
+    state.butlers.push({ id: ++_butlerId, count: 1, dailyRate: 400 });
     renderButlers();
   }
   updateCarDays();
