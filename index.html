@@ -839,10 +839,7 @@ function calcMealTotal() {
 // 活动
 // ============================================================
 function addActivity() {
-  const defaultNames = ['松赞林寺朝圣之旅', '纳帕海环湖', '普达措', '塔城村庄漫步', '梅里后山采蘑菇', '雨崩冰湖徒步'];
-  const usedNames = state.activities.map(a => a.name);
-  const nextName = defaultNames.find(n => !usedNames.includes(n)) || `活动${state.activities.length + 1}`;
-  state.activities.push({ id: ++_actId, name: nextName, pricePer: 100, count: 2 });
+  state.activities.push({ id: ++_actId, name: '', pricePer: 100, count: 2 });
   renderActivities();
 }
 function removeActivity(id) {
@@ -944,8 +941,9 @@ function renderActivities() {
     <div class="item-card">
       <div class="item-header">
         <div class="act-dropdown" id="act-drop-${a.id}">
-          <input type="text" class="act-dropdown-input" value="${a.name}"
-            placeholder="搜索选择活动..."
+          <input type="text" class="act-dropdown-input"
+            value="${a.name || ''}"
+            placeholder="点击搜索并选择活动…"
             autocomplete="off"
             onfocus="showActDropdown(${a.id}, this)"
             oninput="filterActDropdown(${a.id}, this.value, ${i})"
