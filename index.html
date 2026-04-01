@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>松赞 · 产品计价工具 v2</title>
+<title>松赞 · 产品计价工具</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -14,534 +14,468 @@
   body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; min-height: 100vh; }
 
   .app { display: flex; min-height: 100vh; }
+  .sidebar { width: 460px; min-width: 460px; background: var(--card); border-right: 1px solid var(--border); overflow-y: auto; position: sticky; top: 0; height: 100vh; }
+  .main { flex: 1; padding: 32px; overflow-y: auto; max-height: 100vh; }
 
-  /* ===== 侧边栏 ===== */
-  .sidebar { width: 520px; min-width: 520px; background: var(--card); border-right: 1px solid var(--border); overflow-y: auto; height: 100vh; position: sticky; top: 0; display: flex; flex-direction: column; }
-  .sidebar-header { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; padding: 20px; flex-shrink: 0; }
-  .sidebar-header h1 { font-size: 17px; margin-bottom: 2px; }
+  .sidebar-header { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; padding: 24px 20px; }
+  .sidebar-header h1 { font-size: 18px; margin-bottom: 4px; }
   .sidebar-header .sub { font-size: 12px; opacity: 0.7; }
-  .sidebar-scroll { flex: 1; overflow-y: auto; }
 
-  .section { padding: 14px 16px; border-bottom: 1px solid var(--border); }
-  .section-title { font-size: 12px; font-weight: 700; color: var(--primary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
-  .section-sub { font-size: 11px; color: var(--muted); margin-top: -6px; margin-bottom: 10px; }
+  .section { padding: 16px 20px; border-bottom: 1px solid var(--border); }
+  .section-title { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
 
-  /* 输入控件 */
-  .form-row { margin-bottom: 8px; }
-  .form-row:last-child { margin-bottom: 0; }
-  .form-label { font-size: 11px; color: #888; margin-bottom: 3px; display: block; }
+  .form-row { margin-bottom: 10px; }
+  .form-label { font-size: 12px; color: #888; margin-bottom: 4px; display: block; }
   .form-input, .form-select {
-    width: 100%; padding: 7px 10px; border: 1px solid #e0dcd5; border-radius: 7px;
+    width: 100%; padding: 8px 12px; border: 1px solid #e0dcd5; border-radius: 8px;
     font-size: 13px; color: var(--text); background: #faf8f5; transition: border-color 0.2s; outline: none;
   }
-  .form-input:focus, .form-select:focus { border-color: var(--primary); background: #fff; }
-  .form-input.sm { padding: 5px 8px; font-size: 12px; }
+  .form-input:focus, .form-select:focus { border-color: var(--primary); }
   .form-row-inline { display: flex; gap: 8px; }
-  .form-row-inline .form-row { flex: 1; margin-bottom: 0; }
-  .form-row-inline .form-row.w20 { flex: 0 0 20%; }
-  .form-row-inline .form-row.w30 { flex: 0 0 30%; }
-  .form-row-inline .form-row.w40 { flex: 0 0 40%; }
-  .form-row-inline .form-row.w60 { flex: 0 0 60%; }
+  .form-row-inline .form-row { flex: 1; }
 
-  /* 编码 */
-  .code-input { font-family: "Courier New", monospace; font-size: 20px; font-weight: 700; letter-spacing: 5px; text-align: center; padding: 12px; }
-  .code-preview { margin-top: 8px; background: #fdf6ed; border-radius: 8px; padding: 8px 12px; font-size: 12px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
-  .code-preview .stop { background: rgba(74,55,40,0.1); border-radius: 20px; padding: 2px 9px; font-weight: 600; font-size: 11px; }
-  .code-preview .arrow { opacity: 0.4; font-size: 10px; }
-  .code-meta { font-size: 11px; color: var(--muted); margin-top: 4px; text-align: center; }
+  /* 编码输入 */
+  .code-input-wrapper { position: relative; }
+  .code-input { font-family: "Courier New", monospace; font-size: 22px; font-weight: 700; letter-spacing: 6px; text-align: center; padding: 14px 16px; }
+  .code-preview {
+    margin-top: 10px; background: #fdf6ed; border-radius: 8px; padding: 10px 14px;
+    font-size: 13px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  }
+  .code-preview .stop { background: rgba(74,55,40,0.1); border-radius: 20px; padding: 3px 10px; font-weight: 600; font-size: 12px; }
+  .code-preview .arrow { opacity: 0.4; font-size: 11px; }
+  .code-meta { font-size: 12px; color: var(--muted); margin-top: 6px; text-align: center; }
 
-  /* 模板 */
-  .template-bar { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
-  .template-tag { padding: 2px 9px; border-radius: 20px; font-size: 11px; background: #faf8f5; border: 1px solid #e8e4dd; cursor: pointer; color: #666; transition: all 0.2s; white-space: nowrap; }
+  /* 快捷模板 */
+  .template-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .template-tag {
+    padding: 3px 10px; border-radius: 20px; font-size: 11px; background: #faf8f5; border: 1px solid #e8e4dd;
+    cursor: pointer; color: #666; transition: all 0.2s; white-space: nowrap;
+  }
   .template-tag:hover { border-color: var(--primary); color: var(--primary); background: #fdf6ed; }
 
-  /* 产品形态 */
-  .trip-type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  .trip-type-btn { padding: 8px 4px; border-radius: 8px; border: 2px solid transparent; background: #faf8f5; cursor: pointer; text-align: center; transition: all 0.2s; font-size: 12px; }
-  .trip-type-btn:hover { border-color: #ddd; }
-  .trip-type-btn.active { border-color: var(--primary); background: #fdf6ed; color: var(--primary); font-weight: 600; }
-  .trip-type-btn .tt-icon { font-size: 18px; display: block; margin-bottom: 2px; }
-  .trip-type-btn .tt-sub { font-size: 10px; color: var(--muted); }
+  /* 酒店卡片 */
+  .hotel-card { background: #faf8f5; border-radius: 8px; padding: 12px; margin-bottom: 8px; border: 1px solid transparent; transition: border-color 0.2s; }
+  .hotel-card:hover { border-color: #ddd; }
+  .hotel-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .hotel-code { font-family: monospace; font-size: 14px; font-weight: 700; color: var(--accent); background: #fdf4ed; padding: 2px 8px; border-radius: 4px; }
+  .hotel-select { flex: 1; margin-left: 8px; padding: 6px 10px; border: 1px solid #e0dcd5; border-radius: 6px; font-size: 13px; background: #fff; outline: none; }
+  .hotel-select:focus { border-color: var(--primary); }
+  .hotel-detail-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  .hotel-detail-row label { font-size: 11px; color: #888; min-width: 40px; }
+  .hotel-detail-row select, .hotel-detail-row input {
+    flex: 1; padding: 4px 8px; border: 1px solid #e0dcd5; border-radius: 6px; font-size: 12px; outline: none; background: #fff;
+  }
+  .hotel-nights-ctrl { display: flex; align-items: center; gap: 4px; }
+  .hotel-nights-ctrl .nb {
+    display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px;
+    border-radius: 50%; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 13px; transition: all 0.2s;
+  }
+  .hotel-nights-ctrl .nb:hover { border-color: var(--primary); color: var(--primary); }
+  .hotel-nights-ctrl .nv { font-size: 14px; font-weight: 600; min-width: 20px; text-align: center; }
+  .hotel-region { font-size: 11px; color: var(--muted); }
+  .hotel-region .tag { padding: 1px 6px; border-radius: 4px; font-size: 10px; }
+  .hotel-region .tag.xz { background: #eaf4fb; color: #1a6fa0; }
+  .hotel-region .tag.yn { background: #eafaf1; color: #1a8060; }
+  .hotel-region .tag.sc { background: #fdf6e3; color: #b7770d; }
+
+  .btn-row { display: flex; gap: 8px; margin-top: 8px; }
+  .btn-sm { padding: 5px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; border: 1px solid #e0dcd5; background: var(--card); color: var(--text); transition: all 0.2s; }
+  .btn-sm:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-sm.danger:hover { border-color: var(--danger); color: var(--danger); }
 
   /* 人员 */
-  .person-ctrl { display: flex; align-items: center; justify-content: center; gap: 8px; }
-  .person-btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 16px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+  .person-config { display: flex; gap: 8px; margin-bottom: 8px; }
+  .person-card { flex: 1; background: #faf8f5; border-radius: 8px; padding: 12px; text-align: center; border: 1px solid transparent; }
+  .person-card.active { border-color: var(--primary); background: #fdf6ed; }
+  .person-num { font-size: 22px; font-weight: 700; color: var(--primary); }
+  .person-label { font-size: 11px; color: #888; margin-top: 2px; }
+  .person-btn {
+    display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px;
+    border-radius: 50%; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 16px; margin: 0 4px; transition: all 0.2s;
+  }
   .person-btn:hover { border-color: var(--primary); color: var(--primary); }
-  .person-num { font-size: 26px; font-weight: 700; color: var(--primary); min-width: 40px; text-align: center; }
-  .person-type-label { font-size: 11px; color: #888; text-align: center; margin-top: 2px; }
-  .person-col { flex: 1; text-align: center; }
-
-  /* 动态项卡片 */
-  .item-card { background: #faf8f5; border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; border: 1px solid #ece8e2; position: relative; }
-  .item-card:hover { border-color: #ddd; }
-  .item-card .item-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-  .item-card .item-title { font-size: 13px; font-weight: 600; flex: 1; }
-  .item-card .item-del { width: 22px; height: 22px; border-radius: 50%; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 12px; color: var(--danger); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .item-card .item-del:hover { background: #fdecea; border-color: var(--danger); }
-  .item-card .item-row { display: flex; gap: 6px; align-items: center; margin-bottom: 4px; }
-  .item-card .item-row:last-child { margin-bottom: 0; }
-  .item-card label { font-size: 11px; color: #888; min-width: 36px; flex-shrink: 0; }
-  .item-card .item-sub { font-size: 10px; color: var(--muted); margin-left: 36px; margin-top: -2px; margin-bottom: 6px; }
-  .item-total { font-size: 11px; color: var(--accent); font-weight: 600; margin-left: 36px; }
-
-  /* 餐饮 */
-  .meal-row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
-  .meal-row label { font-size: 11px; color: #888; min-width: 36px; flex-shrink: 0; }
-  .meal-row input { flex: 1; padding: 5px 8px; border: 1px solid #e0dcd5; border-radius: 6px; font-size: 12px; background: #fff; outline: none; }
-  .meal-row input:focus { border-color: var(--primary); }
-  .meal-row span { font-size: 11px; color: var(--muted); min-width: 32px; }
-  .meal-total { font-size: 11px; color: var(--accent); font-weight: 600; margin-top: 4px; padding: 4px 8px; background: #fdf4ed; border-radius: 6px; display: inline-block; }
-
-  /* 添加按钮 */
-  .add-btn { display: inline-flex; align-items: center; gap: 4px; padding: 5px 12px; border-radius: 6px; border: 1px dashed #ccc; background: transparent; cursor: pointer; font-size: 12px; color: #888; transition: all 0.2s; width: 100%; justify-content: center; }
-  .add-btn:hover { border-color: var(--primary); color: var(--primary); background: #fdf6ed; }
 
   /* 季节 */
-  .season-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
-  .season-btn { padding: 7px 3px; border-radius: 8px; border: 2px solid transparent; background: #faf8f5; cursor: pointer; text-align: center; transition: all 0.2s; }
+  .season-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .season-btn { padding: 8px 4px; border-radius: 8px; border: 2px solid transparent; background: #faf8f5; cursor: pointer; text-align: center; transition: all 0.2s; }
   .season-btn:hover { border-color: #ddd; }
   .season-btn.active { border-color: var(--primary); background: #fdf6ed; }
-  .season-btn .s-name { font-size: 11px; font-weight: 700; }
-  .season-btn .s-rate { font-size: 10px; color: var(--muted); }
+  .season-btn .s-name { font-size: 12px; font-weight: 600; }
+  .season-btn .s-rate { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
   /* 折扣 */
-  .discount-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .discount-card { background: #faf8f5; border-radius: 8px; padding: 12px 6px; text-align: center; border: 2px solid transparent; cursor: pointer; transition: all 0.2s; }
+  .discount-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .discount-card { background: #faf8f5; border-radius: 8px; padding: 14px; text-align: center; border: 2px solid transparent; cursor: pointer; transition: all 0.2s; }
   .discount-card:hover { border-color: #ddd; }
   .discount-card.active { border-color: var(--primary); background: #fdf6ed; }
-  .discount-card .d-rate { font-size: 16px; font-weight: 700; color: var(--primary); }
-  .discount-card .d-label { font-size: 10px; color: #888; margin-top: 3px; }
+  .discount-card .d-rate { font-size: 18px; font-weight: 700; color: var(--primary); }
+  .discount-card .d-label { font-size: 11px; color: #888; margin-top: 4px; }
 
   /* 计算按钮 */
-  .calc-btn { display: block; width: calc(100% - 32px); margin: 12px 16px; padding: 13px; border: none; border-radius: 10px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; letter-spacing: 1px; transition: transform 0.2s, box-shadow 0.2s; flex-shrink: 0; }
+  .calc-btn {
+    display: block; width: calc(100% - 40px); margin: 16px 20px; padding: 14px; border: none; border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; font-size: 15px; font-weight: 700;
+    cursor: pointer; letter-spacing: 1px; transition: transform 0.2s, box-shadow 0.2s;
+  }
   .calc-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(74,55,40,0.3); }
+  .calc-btn:active { transform: translateY(0); }
 
-  /* ===== 主内容 ===== */
-  .main { flex: 1; padding: 28px 32px; overflow-y: auto; max-height: 100vh; }
+  /* 主内容区 */
+  .result-header { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; border-radius: 12px; padding: 24px 28px; margin-bottom: 24px; }
+  .result-header h2 { font-size: 20px; margin-bottom: 8px; }
+  .result-header .route { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 13px; margin-top: 8px; }
+  .result-header .stop { background: rgba(255,255,255,0.18); border-radius: 20px; padding: 3px 10px; font-weight: 600; }
+  .result-header .arrow { opacity: 0.5; font-size: 11px; }
+  .result-header .meta { font-size: 12px; opacity: 0.7; margin-top: 8px; }
 
-  .result-header { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #fff; border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; }
-  .result-header h2 { font-size: 18px; margin-bottom: 6px; }
-  .result-header .route { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; font-size: 13px; margin-top: 6px; }
-  .result-header .stop { background: rgba(255,255,255,0.18); border-radius: 20px; padding: 2px 9px; font-weight: 600; }
-  .result-header .arrow { opacity: 0.5; font-size: 10px; }
-  .result-header .meta { font-size: 12px; opacity: 0.7; margin-top: 6px; }
-
-  .card { background: var(--card); border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-  .card h3 { font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
-
-  .price-overview { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
-  .price-card { background: #faf8f5; border-radius: 10px; padding: 16px; text-align: center; border: 1px solid var(--border); }
-  .price-card .p-label { font-size: 12px; color: #888; margin-bottom: 6px; }
-  .price-card .p-value { font-size: 26px; font-weight: 700; }
-  .price-card .p-value.adult { color: var(--primary); }
-  .price-card .p-value.child { color: var(--accent); }
-  .price-card .p-value.total { color: var(--success); }
-  .price-card .p-unit { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .card { background: var(--card); border-radius: 12px; padding: 24px 28px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .card h3 { font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
 
   .cost-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .cost-table th { background: #f5f0ea; padding: 9px 12px; text-align: left; font-weight: 600; color: #5a4030; }
+  .cost-table th { background: #f5f0ea; padding: 10px 12px; text-align: left; font-weight: 600; color: #5a4030; }
   .cost-table th:not(:first-child) { text-align: center; }
-  .cost-table td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+  .cost-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
   .cost-table td:not(:first-child) { text-align: center; }
   .cost-table tr:last-child td { border-bottom: none; }
   .cost-table tr:nth-child(even) td { background: #faf8f5; }
-  .cost-table .subtotal-row td { background: #fdf6ed; font-weight: 700; color: var(--primary); border-top: 2px solid var(--primary); }
-  .cost-table .final-row td { background: #f0fdf4; font-weight: 700; color: var(--success); border-top: 2px solid var(--success); }
+  .cost-table .total-row td { background: #f5f0ea; font-weight: 700; color: var(--primary); border-top: 2px solid var(--primary); }
+  .cost-table .price-row td { background: #fdf6ed; font-weight: 700; border-top: 2px solid var(--accent); color: var(--accent); font-size: 15px; }
+
+  .price-overview { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+  .price-card { background: #faf8f5; border-radius: 10px; padding: 20px; text-align: center; border: 1px solid var(--border); }
+  .price-card .p-label { font-size: 12px; color: #888; margin-bottom: 8px; }
+  .price-card .p-value { font-size: 28px; font-weight: 700; }
+  .price-card .p-value.adult { color: var(--primary); }
+  .price-card .p-value.child { color: var(--accent); }
+  .price-card .p-value.total { color: var(--success); }
+  .price-card .p-unit { font-size: 12px; color: var(--muted); margin-top: 4px; }
 
   .season-compare { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
   .sc-card { border-radius: 8px; padding: 12px; text-align: center; border: 2px solid transparent; }
   .sc-card.active { border-color: var(--primary); }
-  .sc-card .sc-name { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+  .sc-card .sc-name { font-size: 12px; font-weight: 600; margin-bottom: 6px; }
   .sc-card .sc-adult { font-size: 14px; font-weight: 700; color: var(--primary); }
   .sc-card .sc-child { font-size: 13px; font-weight: 600; color: var(--accent); margin-top: 2px; }
 
+  .empty-state { text-align: center; padding: 80px 40px; color: var(--muted); }
+  .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+  .empty-state .title { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+  .empty-state .desc { font-size: 13px; }
+
   .notice-list { list-style: none; }
-  .notice-list li { display: flex; align-items: flex-start; gap: 8px; padding: 7px 0; border-bottom: 1px solid #f5f0ea; font-size: 13px; }
+  .notice-list li { display: flex; align-items: flex-start; gap: 8px; padding: 8px 0; border-bottom: 1px solid #f5f0ea; font-size: 13px; }
   .notice-list li:last-child { border-bottom: none; }
   .notice-icon { flex-shrink: 0; margin-top: 1px; }
-
-  .empty-state { text-align: center; padding: 80px 40px; color: var(--muted); }
-  .empty-state .icon { font-size: 48px; margin-bottom: 14px; opacity: 0.3; }
-  .empty-state .title { font-size: 15px; font-weight: 600; margin-bottom: 8px; color: var(--text); }
-  .empty-state .desc { font-size: 12px; }
 
   .toast { position: fixed; top: 20px; right: 20px; background: var(--primary); color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 13px; z-index: 1000; transform: translateX(120%); transition: transform 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
   .toast.show { transform: translateX(0); }
   .toast.warn { background: var(--warn); }
 
-  /* section toggle */
-  .section-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
-  .section-toggle .chevron { font-size: 10px; transition: transform 0.2s; }
-  .section-toggle .chevron.down { transform: rotate(90deg); }
-  .section-content { margin-top: 10px; }
-  .section-content.collapsed { display: none; }
-
-  @media (max-width: 960px) {
+  @media (max-width: 900px) {
     .app { flex-direction: column; }
     .sidebar { width: 100%; min-width: 100%; height: auto; position: relative; }
-    .main { max-height: none; padding: 16px; }
+    .main { max-height: none; padding: 20px 16px; }
     .season-compare { grid-template-columns: repeat(2, 1fr); }
   }
 </style>
 </head>
 <body>
 <div class="app">
-
-  <!-- ==================== 侧边栏 ==================== -->
   <aside class="sidebar">
     <div class="sidebar-header">
-      <h1>🏔 松赞 · 产品计价工具 v2</h1>
-      <div class="sub">支持多车/多管家/多活动/餐饮分项</div>
+      <h1>🏔 松赞 · 产品计价工具</h1>
+      <div class="sub">输入行程编码，自动解析酒店并计价</div>
     </div>
 
-    <div class="sidebar-scroll">
+    <!-- 行程编码 -->
+    <div class="section">
+      <div class="section-title">📍 行程编码</div>
+      <div class="form-row">
+        <label class="form-label">输入行程简称编码（每个字=1晚，字数=晚数+1=天数）</label>
+        <div class="code-input-wrapper">
+          <input class="form-input code-input" id="routeCode" value="波波百巴巴" placeholder="波波百巴巴" oninput="parseRouteCode()">
+        </div>
+      </div>
+      <div class="code-preview" id="routePreview"></div>
+      <div class="code-meta" id="routeMeta"></div>
+      <div class="template-bar" id="templateBar"></div>
+    </div>
 
-      <!-- 行程编码 -->
-      <div class="section">
-        <div class="section-title">📍 行程编码</div>
+    <!-- 行程类型 -->
+    <div class="section">
+      <div class="section-title">📋 产品形态</div>
+      <div class="form-row-inline">
         <div class="form-row">
-          <div class="code-input-wrapper">
-            <input class="form-input code-input" id="routeCode" value="波波百巴巴" placeholder="输入行程简称" oninput="parseRouteCode()">
-          </div>
+          <label class="form-label">产品形态</label>
+          <select class="form-select" id="tripType" onchange="onTripTypeChange()">
+            <option value="free">自由行（无管家，活动仅推荐）</option>
+            <option value="private">私享管家（含管家+餐饮）</option>
+            <option value="group">主题团（8-12人拼团）</option>
+          </select>
         </div>
-        <div class="code-preview" id="routePreview"></div>
-        <div class="code-meta" id="routeMeta"></div>
-        <div class="template-bar" id="templateBar"></div>
-      </div>
-
-      <!-- 产品形态 -->
-      <div class="section">
-        <div class="section-title">📋 产品形态</div>
-        <div class="trip-type-grid">
-          <div class="trip-type-btn active" data-type="free" onclick="setTripType('free')">
-            <span class="tt-icon">🚗</span><span>自由行</span>
-            <span class="tt-sub">无管家</span>
-          </div>
-          <div class="trip-type-btn" data-type="private" onclick="setTripType('private')">
-            <span class="tt-icon">🧑‍💼</span><span>私享管家</span>
-            <span class="tt-sub">含管家+餐饮</span>
-          </div>
-          <div class="trip-type-btn" data-type="group" onclick="setTripType('group')">
-            <span class="tt-icon">👥</span><span>主题团</span>
-            <span class="tt-sub">8-12人拼团</span>
-          </div>
-        </div>
-        <div class="form-row-inline" style="margin-top:10px;">
-          <div class="form-row">
-            <label class="form-label">环线</label>
-            <select class="form-select" id="routeLine" onchange="updateDiscountOptions()">
-              <option value="glacier">冰川线</option>
-              <option value="sanjiang">三江线</option>
-              <option value="lhasa" selected>拉萨线</option>
-              <option value="shangri">香格里拉线</option>
-            </select>
-          </div>
-          <div class="form-row">
-            <label class="form-label">接送机组合</label>
-            <select class="form-select" id="transferType" onchange="updateCarDays()">
-              <option value="pm_am">下午接+上午送</option>
-              <option value="am_am">上午接+上午送(+0.5天)</option>
-              <option value="pm_pm">下午接+下午送(+0.5天)</option>
-              <option value="am_pm">上午接+下午送(+1天)</option>
-            </select>
-          </div>
+        <div class="form-row">
+          <label class="form-label">环线（影响预售折扣）</label>
+          <select class="form-select" id="routeLine">
+            <option value="glacier">冰川线</option>
+            <option value="sanjiang">三江线</option>
+            <option value="lhasa" selected>拉萨线</option>
+            <option value="shangri">香格里拉线</option>
+          </select>
         </div>
       </div>
-
-      <!-- 人员配置 -->
-      <div class="section">
-        <div class="section-title">👥 人员配置</div>
-        <div class="form-row-inline">
-          <div class="person-col">
-            <div class="person-ctrl">
-              <button class="person-btn" onclick="changePerson('adult', -1)">−</button>
-              <span class="person-num" id="adultCount">2</span>
-              <button class="person-btn" onclick="changePerson('adult', 1)">+</button>
-            </div>
-            <div class="person-type-label">成人</div>
-          </div>
-          <div class="person-col">
-            <div class="person-ctrl">
-              <button class="person-btn" onclick="changePerson('child', -1)">−</button>
-              <span class="person-num" id="childCount">0</span>
-              <button class="person-btn" onclick="changePerson('child', 1)">+</button>
-            </div>
-            <div class="person-type-label">儿童</div>
-          </div>
+      <div class="form-row-inline">
+        <div class="form-row">
+          <label class="form-label">接送机</label>
+          <select class="form-select" id="transferType" onchange="updateCarDays()">
+            <option value="pm_am">下午接机 + 上午送机</option>
+            <option value="am_am">上午接机 + 上午送机（+0.5天）</option>
+            <option value="pm_pm">下午接机 + 下午送机（+0.5天）</option>
+            <option value="am_pm">上午接机 + 下午送机（+1天）</option>
+          </select>
         </div>
-        <div id="childConfigRow" style="display:none; margin-top:10px;">
-          <div class="form-row-inline">
-            <div class="form-row">
-              <label class="form-label">儿童年龄</label>
-              <input class="form-input sm" type="number" id="childAge" value="10" min="0" max="17">
-            </div>
-            <div class="form-row">
-              <label class="form-label">床位方式</label>
-              <select class="form-select sm" id="bedType">
-                <option value="extra">加床（同成人）</option>
-                <option value="share">占床（独占1间）</option>
-              </select>
-            </div>
-          </div>
+        <div class="form-row">
+          <label class="form-label">车司计费天数</label>
+          <input class="form-input" type="number" id="carDays" value="4" min="0" step="0.5" readonly style="background:#eee;">
         </div>
       </div>
+    </div>
 
-      <!-- 酒店住宿 -->
-      <div class="section">
-        <div class="section-title">🏨 酒店住宿</div>
-        <div id="hotelList"></div>
-        <div class="add-btn" onclick="addHotel()" style="margin-top:8px;">＋ 添加酒店</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:6px;text-align:right;" id="hotelTotal"></div>
-      </div>
-
-      <!-- 车辆 -->
-      <div class="section">
-        <div class="section-title">🚗 车辆配置</div>
-        <div class="section-sub">选择车型、数量、全程包车费（元/辆/全程）</div>
-        <div id="carList"></div>
-        <div class="add-btn" onclick="addCar()" style="margin-top:8px;">＋ 添加车辆</div>
-        <div style="font-size:11px;color:var(--accent);font-weight:600;margin-top:6px;" id="carSectionTotal"></div>
-      </div>
-
-      <!-- 司机 -->
-      <div class="section">
-        <div class="section-title">🚙 司机配置</div>
-        <div class="section-sub">数量 × 计费天数 × 日单价（元/人/天）</div>
-        <div id="driverList"></div>
-        <div class="add-btn" onclick="addDriver()" style="margin-top:8px;">＋ 添加司机档</div>
-        <div style="font-size:11px;color:var(--accent);font-weight:600;margin-top:6px;" id="driverSectionTotal"></div>
-      </div>
-
-      <!-- 管家 -->
-      <div class="section">
-        <div class="section-title">🧑‍💼 管家</div>
-        <div class="section-sub" id="butlerSub">管家费用 = 管家数量 × 行程天数 × 管家日薪</div>
-        <div id="butlerList"></div>
-        <div class="add-btn" onclick="addButler()" style="margin-top:8px;">＋ 添加管家</div>
-        <div style="font-size:11px;color:var(--accent);font-weight:600;margin-top:6px;" id="butlerSectionTotal"></div>
-      </div>
-
-      <!-- 餐饮 -->
-      <div class="section">
-        <div class="section-title">🍽 餐饮配置</div>
-        <div class="section-sub">早/午/晚餐 × 餐标（元/人/餐）× 餐数</div>
-        <div class="meal-row">
-          <label>早餐</label>
-          <input type="number" id="breakfastPrice" value="80" step="5" oninput="calcMealTotal()">
-          <span>元/人</span>
-          <span style="color:var(--muted);">餐数:</span>
-          <input type="number" id="breakfastCount" value="5" min="0" style="width:50px;" oninput="calcMealTotal()">
+    <!-- 人员 -->
+    <div class="section">
+      <div class="section-title">👥 人员配置</div>
+      <div class="person-config">
+        <div class="person-card active">
+          <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:4px;">
+            <button class="person-btn" onclick="changePerson('adult', -1)">−</button>
+            <span class="person-num" id="adultCount">2</span>
+            <button class="person-btn" onclick="changePerson('adult', 1)">+</button>
+          </div>
+          <div class="person-label">成人</div>
         </div>
-        <div class="meal-row">
-          <label>午餐</label>
-          <input type="number" id="lunchPrice" value="150" step="5" oninput="calcMealTotal()">
-          <span>元/人</span>
-          <span style="color:var(--muted);">餐数:</span>
-          <input type="number" id="lunchCount" value="4" min="0" style="width:50px;" oninput="calcMealTotal()">
-        </div>
-        <div class="meal-row">
-          <label>晚餐</label>
-          <input type="number" id="dinnerPrice" value="200" step="5" oninput="calcMealTotal()">
-          <span>元/人</span>
-          <span style="color:var(--muted);">餐数:</span>
-          <input type="number" id="dinnerCount" value="4" min="0" style="width:50px;" oninput="calcMealTotal()">
-        </div>
-        <div style="margin-top:6px;">
-          <span class="meal-total" id="mealTotal">成人人均: ¥1,320（5天）</span>
-          <span style="font-size:11px;color:var(--muted);margin-left:8px;" id="mealDaysHint"></span>
+        <div class="person-card">
+          <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:4px;">
+            <button class="person-btn" onclick="changePerson('child', -1)">−</button>
+            <span class="person-num" id="childCount">1</span>
+            <button class="person-btn" onclick="changePerson('child', 1)">+</button>
+          </div>
+          <div class="person-label">儿童</div>
         </div>
       </div>
-
-      <!-- 活动 -->
-      <div class="section">
-        <div class="section-title">🎯 活动项目</div>
-        <div class="section-sub">可添加多个活动，每个项目：名称 × 单价（元/人）× 参加次数</div>
-        <div id="activityList"></div>
-        <div class="add-btn" onclick="addActivity()" style="margin-top:8px;">＋ 添加活动</div>
-        <div style="font-size:11px;color:var(--accent);font-weight:600;margin-top:6px;" id="activitySectionTotal"></div>
+      <div class="form-row" id="childAgeRow">
+        <label class="form-label">儿童年龄</label>
+        <input class="form-input" type="number" id="childAge" value="11" min="0" max="17">
       </div>
+      <div class="form-row" id="bedTypeRow">
+        <label class="form-label">儿童床位方式</label>
+        <select class="form-select" id="bedType">
+          <option value="extra">加床（与成人同住）</option>
+          <option value="share">占床（独占1间按成人价）</option>
+        </select>
+      </div>
+    </div>
 
-      <!-- 保险 & 零食 -->
-      <div class="section">
-        <div class="section-title">🛡 保险 & 零食</div>
-        <div class="form-row-inline">
-          <div class="form-row">
-            <label class="form-label">保险（元/人/全程）</label>
-            <input class="form-input" type="number" id="insurance" value="50" step="5">
-          </div>
-          <div class="form-row">
-            <label class="form-label">零食（元/人/全程）</label>
-            <input class="form-input" type="number" id="snack" value="80" step="5">
-          </div>
+    <!-- 酒店住宿 -->
+    <div class="section">
+      <div class="section-title">🏨 酒店住宿（由编码自动生成，可切换酒店）</div>
+      <div id="hotelList"></div>
+      <div class="btn-row">
+        <button class="btn-sm" onclick="addHotel()">＋ 手动添加酒店</button>
+        <span style="flex:1"></span>
+        <span style="font-size:12px;color:var(--muted);line-height:28px;" id="hotelTotal"></span>
+      </div>
+    </div>
+
+    <!-- 车辆 & 司机 & 管家 -->
+    <div class="section">
+      <div class="section-title">🚗 车辆 / 司机 / 管家</div>
+      <div class="form-row-inline">
+        <div class="form-row">
+          <label class="form-label">车辆成本（元/辆/全程）</label>
+          <input class="form-input" type="number" id="carCost" value="2800" step="10" oninput="updateCarDriverDisplay()">
+        </div>
+        <div class="form-row">
+          <label class="form-label">司机费用（元/天）</label>
+          <input class="form-input" type="number" id="driverCost" value="350" step="10" oninput="updateCarDriverDisplay()">
         </div>
       </div>
+      <div class="form-row" id="butlerRow" style="display:none;">
+        <label class="form-label">管家费用（元/天）</label>
+        <input class="form-input" type="number" id="butlerCost" value="400" step="10">
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">
+        车司合计：<strong id="carDriverTotal">4,025</strong> 元/辆（<span id="carDriverCalc">2800 + 350×4</span>）
+        <span id="butlerHint"></span>
+      </div>
+    </div>
 
-      <!-- 季节 -->
-      <div class="section">
-        <div class="section-title">📅 季节 & 成本率</div>
-        <div class="season-grid">
-          <div class="season-btn" data-season="peak" onclick="selectSeason('peak')">
-            <div class="s-name">🔴 节日</div><div class="s-rate">成本率 80%</div>
-          </div>
-          <div class="season-btn active" data-season="high" onclick="selectSeason('high')">
-            <div class="s-name">🟠 旺季</div><div class="s-rate">成本率 82.5%</div>
-          </div>
-          <div class="season-btn" data-season="shoulder" onclick="selectSeason('shoulder')">
-            <div class="s-name">🔵 平季</div><div class="s-rate">成本率 85%</div>
-          </div>
-          <div class="season-btn" data-season="low" onclick="selectSeason('low')">
-            <div class="s-name">🟢 淡季</div><div class="s-rate">成本率 90%</div>
-          </div>
+    <!-- 人均元素 -->
+    <div class="section">
+      <div class="section-title">📦 人均元素成本</div>
+      <div class="form-row-inline">
+        <div class="form-row">
+          <label class="form-label">活动（元/人）</label>
+          <input class="form-input" type="number" id="activityCost" value="55" step="5">
+        </div>
+        <div class="form-row">
+          <label class="form-label">餐饮（元/人）</label>
+          <input class="form-input" type="number" id="foodCost" value="300" step="10">
         </div>
       </div>
-
-      <!-- 预售折扣 -->
-      <div class="section">
-        <div class="section-title">🏷 预售折扣</div>
-        <div id="discountArea"></div>
+      <div class="form-row-inline">
+        <div class="form-row">
+          <label class="form-label">保险（元/人）</label>
+          <input class="form-input" type="number" id="insuranceCost" value="50" step="5">
+        </div>
+        <div class="form-row">
+          <label class="form-label">零食（元/人）</label>
+          <input class="form-input" type="number" id="snackCost" value="80" step="5">
+        </div>
       </div>
+    </div>
 
-    </div><!-- sidebar-scroll -->
+    <!-- 季节 & 利润率结构 -->
+    <div class="section">
+      <div class="section-title">📅 季节 & 成本率</div>
+      <div style="font-size:11px;color:#aaa;margin-bottom:8px;line-height:1.5;">
+        利润率 = 集团分摊(<span id="disp-overhead">10</span>%) + 基础成本率(<span id="disp-base">5</span>%) − 季节成本率<br>
+        成本率 = 1 − 利润率（季节成本率为负 → 利润率增加 → 成本率降低）
+      </div>
+      <div class="season-grid" id="seasonGrid"></div>
+    </div>
+
+    <!-- 预售折扣 -->
+    <div class="section">
+      <div class="section-title">🏷 预售折扣</div>
+      <div id="discountArea"></div>
+    </div>
 
     <button class="calc-btn" onclick="calculate()">💰 开始计价</button>
   </aside>
 
-  <!-- ==================== 主内容 ==================== -->
   <main class="main" id="resultArea">
     <div class="empty-state">
       <div class="icon">🏔</div>
-      <div class="title">输入行程编码，配置各项参数后点击「开始计价」</div>
-      <div class="desc">支持多车辆、多管家、多活动、餐标分项配置</div>
+      <div class="title">输入行程编码，配置参数后点击「开始计价」</div>
+      <div class="desc">如：波波百巴巴 = 波密→百巴→巴松措×2，4晚5天</div>
     </div>
   </main>
-
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ============================================================
-// 酒店码表
-// ============================================================
+// ===== 酒店码表（来源：.memory/MEMORY.md） =====
 const HOTEL_DB = {
-  '达': { name: '松赞南迦巴瓦山居', short: '南迦巴瓦', region: '西藏', tag: 'xz', defaultRoomType: '豪华大床房', defaultPrice: 0, canExtraBed: true, notes: '含峡谷门票', transfer: 'paid' },
-  '石': { name: '松赞石月亮山居', short: '石月亮', region: '云南', tag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
-  '梅': { name: '松赞梅里山居', short: '梅里', region: '云南', tag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
-  '香': { name: '松赞香格里拉林卡', short: '香格里拉', region: '云南', tag: 'yn', defaultRoomType: '豪华大床/双床房', defaultPrice: 0, canExtraBed: true, notes: '含松赞林寺门票；免费接送机', transfer: 'free' },
-  '绿': { name: '松赞绿谷山居', short: '绿谷', region: '云南', tag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '免费接送机', transfer: 'free' },
-  '塔': { name: '松赞塔城山居', short: '塔城', region: '云南', tag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
-  '奔': { name: '松赞奔子栏山居', short: '奔子栏', region: '云南', tag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
-  '丙': { name: '松赞丙中洛山居', short: '丙中洛', region: '云南', tag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '不提供接送机', transfer: 'none' },
-  '茨': { name: '松赞茨中山居', short: '茨中', region: '云南', tag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
-  '巴': { name: '松赞巴松措林卡', short: '巴松措', region: '西藏', tag: 'xz', defaultRoomType: '高级大/双床房', defaultPrice: 674.25, canExtraBed: true, notes: '', transfer: 'paid' },
-  '拉': { name: '松赞拉萨林卡', short: '拉萨', region: '西藏', tag: 'xz', defaultRoomType: '豪华大床房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
-  '日': { name: '日喀则', short: '日喀则', region: '西藏', tag: 'xz', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
-  '乃': { name: '松赞乃朗山居', short: '乃朗', region: '西藏', tag: 'xz', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
-  '百': { name: '松赞百巴帐篷营地', short: '百巴', region: '西藏', tag: 'xz', defaultRoomType: '双床房（唯一）', defaultPrice: 831.88, canExtraBed: false, notes: '不支持加床', transfer: 'paid' },
-  '来': { name: '松赞来古山居', short: '来古', region: '西藏', tag: 'xz', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '不提供接送机', transfer: 'none' },
-  '波': { name: '松赞波密山居', short: '波密', region: '西藏', tag: 'xz', defaultRoomType: '湖景豪华大/双床房', defaultPrice: 653.27, canExtraBed: true, notes: '不提供接送机', transfer: 'none' },
-  '墨': { name: '墨脱', short: '墨脱', region: '西藏', tag: 'xz', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'none' },
-  '丽': { name: '松赞丽江山居', short: '丽江', region: '云南', tag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
-  '普': { name: '松赞普洱绿谷', short: '普洱', region: '云南', tag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '免费接送机', transfer: 'free' },
-  '亚': { name: '松赞亚丁山居', short: '亚丁', region: '四川', tag: 'sc', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
-  '如': { name: '松赞如美', short: '如美', region: '西藏', tag: 'xz', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'none' },
+  '达': { name: '松赞南迦巴瓦山居', short: '南迦巴瓦', region: '西藏', regionTag: 'xz', defaultRoomType: '豪华大床房', defaultPrice: 0, canExtraBed: true, notes: '房费含南迦巴瓦大峡谷门票', transfer: 'paid' },
+  '石': { name: '松赞石月亮山居', short: '石月亮', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '梅': { name: '松赞梅里山居', short: '梅里', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '香': { name: '松赞香格里拉林卡', short: '香格里拉', region: '云南', regionTag: 'yn', defaultRoomType: '豪华大床/双床房', defaultPrice: 0, canExtraBed: true, notes: '房费含松赞林寺门票；免费接送机', transfer: 'free' },
+  '绿': { name: '松赞绿谷山居', short: '绿谷', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '免费接送机', transfer: 'free' },
+  '塔': { name: '松赞塔城山居', short: '塔城', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '奔': { name: '松赞奔子栏山居', short: '奔子栏', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '丙': { name: '松赞丙中洛山居', short: '丙中洛', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '不提供接送机', transfer: 'none' },
+  '茨': { name: '松赞茨中山居', short: '茨中', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '巴': { name: '松赞巴松措林卡', short: '巴松措', region: '西藏', regionTag: 'xz', defaultRoomType: '高级大/双床房', defaultPrice: 674.25, canExtraBed: true, notes: '', transfer: 'paid' },
+  '拉': { name: '松赞拉萨林卡', short: '拉萨', region: '西藏', regionTag: 'xz', defaultRoomType: '豪华大床房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '日': { name: '日喀则', short: '日喀则', region: '西藏', regionTag: 'xz', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '乃': { name: '松赞乃朗山居', short: '乃朗', region: '西藏', regionTag: 'xz', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '百': { name: '松赞百巴帐篷营地', short: '百巴', region: '西藏', regionTag: 'xz', defaultRoomType: '双床房（唯一标准房型）', defaultPrice: 831.88, canExtraBed: false, notes: '不支持加床', transfer: 'paid' },
+  '来': { name: '松赞来古山居', short: '来古', region: '西藏', regionTag: 'xz', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '不提供接送机', transfer: 'none' },
+  '波': { name: '松赞波密山居', short: '波密', region: '西藏', regionTag: 'xz', defaultRoomType: '湖景豪华大/双床房', defaultPrice: 653.27, canExtraBed: true, notes: '不提供接送机', transfer: 'none' },
+  '墨': { name: '墨脱', short: '墨脱', region: '西藏', regionTag: 'xz', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'none' },
+  '丽': { name: '松赞丽江山居', short: '丽江', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '普': { name: '松赞普洱绿谷', short: '普洱', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '免费接送机', transfer: 'free' },
+  '亚': { name: '松赞亚丁山居', short: '亚丁', region: '四川', regionTag: 'sc', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '泸': { name: '泸沽湖', short: '泸沽湖', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '保': { name: '保山', short: '保山', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '昆': { name: '松赞昆明', short: '昆明', region: '云南', regionTag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
+  '如': { name: '松赞如美', short: '如美', region: '西藏', regionTag: 'xz', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'none' },
 };
 
-// ============================================================
-// 车辆配置
-// ============================================================
-const CAR_TYPES = [
-  { value: 'land_rover', label: '路虎卫士' },
-  { value: 'mercedes', label: '奔驰商务（V级）' },
-  { value: 'hiace', label: '海狮/考斯特' },
-  { value: 'custom', label: '自定义车型' },
-];
-
-// ============================================================
-// 快捷模板
-// ============================================================
+// ===== 快捷模板 =====
 const TEMPLATES = [
   { name: '藏东南', code: '波波百巴巴' },
-  { name: '达达巴巴', code: '达达巴巴' },
-  { name: '雪山桃花', code: '达巴巴拉拉' },
+  { name: '达达巴巴拉拉', code: '达达巴巴拉拉' },
   { name: '最美四百公里', code: '波波来波达' },
   { name: '探索生命力量', code: '波波来来波达达' },
   { name: '三江并流', code: '石石丙丙茨梅香丽' },
-  { name: '回到远方', code: '丽丽塔塔绿绿' },
+  { name: '雪山桃花圣城', code: '达巴巴拉拉' },
+  { name: '雪山圣湖布达拉', code: '达达巴巴拉拉拉' },
+  { name: '回到远方的家', code: '丽丽塔塔绿绿' },
   { name: '转山寻酿', code: '塔茨茨奔香' },
+  { name: '朝圣之路', code: '香奔梅梅如如来波波达百巴拉' },
 ];
 
-// ============================================================
-// 季节配置
-// ============================================================
-const SEASON_CONFIG = {
-  peak:    { name: '节日', costRate: 0.80, profit: 0.20, bg: '#fdecea', color: '#c0392b' },
-  high:    { name: '旺季', costRate: 0.825, profit: 0.175, bg: '#fdf6e3', color: '#b7770d' },
-  shoulder:{ name: '平季', costRate: 0.85, profit: 0.15, bg: '#eaf4fb', color: '#1a6fa0' },
-  low:     { name: '淡季', costRate: 0.90, profit: 0.10, bg: '#eafaf1', color: '#1a8060' },
+// ===== 利润率结构配置 =====
+// 公式：利润率 = 集团分摊与息税率 + 基础成本率 - 季节成本率
+//        成本率 = 1 - 利润率
+// 说明：季节成本率为负数时增加利润率（淡季补贴），为正数时降低利润率（旺季溢价）
+const RATE_CONFIG = {
+  overheadRate: 0.10,   // 集团分摊与息税率（固定）
+  baseCostRate: 0.05,   // 基础成本率（固定）
 };
 
-// ============================================================
-// 预售折扣配置
-// ============================================================
+const SEASON_CONFIG = {
+  peak:    { name: '节日', seasonalRate: -0.05, color: '#c0392b', bg: '#fdecea' },
+  high:    { name: '旺季', seasonalRate: -0.025, color: '#b7770d', bg: '#fdf6e3' },
+  shoulder:{ name: '平季', seasonalRate:  0.00,  color: '#1a6fa0', bg: '#eaf4fb' },
+  low:     { name: '淡季', seasonalRate:  0.05,  color: '#1a8060', bg: '#eafaf1' }
+};
+
+// 计算各季节的利润率与成本率（基于公式动态计算，不写死）
+Object.values(SEASON_CONFIG).forEach(cfg => {
+  cfg.profitRate = RATE_CONFIG.overheadRate + RATE_CONFIG.baseCostRate - cfg.seasonalRate;
+  cfg.costRate   = 1 - cfg.profitRate;
+});
+
+// ===== 预售折扣配置（按环线 × 长短线） =====
 const PRESELL_CONFIG = {
   glacier: {
     long: { label: '冰川长线(≥7晚)', m1: 0.95, m2: 0.90 },
-    short: { label: '冰川短线(<7晚)', m1: 0.98, m2: 0.95 },
+    short: { label: '冰川短线(<7晚)', m1: 0.98, m2: 0.95 }
   },
   sanjiang: {
     long: { label: '三江长线(≥7晚)', m1: 0.95, m2: 0.90 },
-    short: { label: '三江短线(<7晚)', m1: 0.98, m2: 0.95 },
+    short: { label: '三江短线(<7晚)', m1: 0.98, m2: 0.95 }
   },
   lhasa: {
     long: { label: '拉萨长线(≥7晚)', m1: 0.98, m2: 0.95 },
-    short: { label: '拉萨短线(<7晚)', m1: 0.98, m2: 0.95 },
+    short: { label: '拉萨短线(<7晚)', m1: 0.98, m2: 0.95 }
   },
   shangri: {
     long: { label: '香格里拉长线(≥7晚)', m1: 0.98, m2: 0.95 },
-    short: { label: '香格里拉短线(<7晚)', m1: 0.98, m2: 0.95 },
-  },
+    short: { label: '香格里拉短线(<7晚)', m1: 0.98, m2: 0.95 }
+  }
 };
 
-// ============================================================
-// 全局状态
-// ============================================================
+// ===== 状态 =====
 let state = {
-  tripType: 'free',         // free | private | group
+  hotels: [],
   season: 'high',
   discount: 1,
   adultCount: 2,
-  childCount: 0,
-  childAge: 10,
+  childCount: 1,
+  childAge: 11,
   bedType: 'extra',
-  hotels: [],
-  cars: [],                 // [{id, type, count, pricePer}]
-  drivers: [],              // [{id, count, dailyRate}]
-  butlers: [],              // [{id, count, dailyRate}]
-  activities: [],           // [{id, name, pricePer, count}]
-  routeDays: 5,
   routeNights: 4,
-  carDays: 4,
+  routeDays: 5
 };
 
-let _carId = 0;
-let _driverId = 0;
-let _butlerId = 0;
-let _actId = 0;
-
-// ============================================================
-// 行程编码解析
-// ============================================================
+// ===== 编码解析 =====
 function parseRouteCode() {
   const code = document.getElementById('routeCode').value.trim();
   if (!code) {
-    document.getElementById('routePreview').innerHTML = '';
+    document.getElementById('routePreview').innerHTML = '<span style="color:#999;font-size:12px;">请输入行程编码</span>';
     document.getElementById('routeMeta').textContent = '';
     state.hotels = [];
     renderHotels();
     return;
   }
-  const chars = [...code];
+
+  const chars = [...code]; // 支持中文
+  const unknownChars = chars.filter(c => !HOTEL_DB[c]);
+
+  // 解析酒店（保留顺序，但相同酒店合并晚数）
   const hotelMap = new Map();
   chars.forEach(c => {
     if (HOTEL_DB[c]) {
@@ -551,389 +485,238 @@ function parseRouteCode() {
       hotelMap.get(key).nights++;
     }
   });
+
   state.hotels = Array.from(hotelMap.values());
   state.routeNights = chars.length;
   state.routeDays = chars.length + 1;
 
-  const preview = chars.map((c, i) => {
-    const name = HOTEL_DB[c] ? HOTEL_DB[c].short : `?${c}`;
-    return `<span class="stop">${name}</span>${i < chars.length - 1 ? '<span class="arrow">→</span>' : ''}`;
+  // 渲染预览（逐站展示）
+  const preview = document.getElementById('routePreview');
+  const stops = chars.map((c, i) => {
+    const name = HOTEL_DB[c] ? HOTEL_DB[c].short : `❓${c}`;
+    const arrow = i < chars.length - 1 ? '<span class="arrow">→</span>' : '';
+    return `<span class="stop">${name}</span>${arrow}`;
   }).join('');
-  document.getElementById('routePreview').innerHTML = preview;
+
+  let warnHTML = '';
+  if (unknownChars.length > 0) {
+    warnHTML = `<span style="color:var(--warn);font-size:11px;margin-left:8px;">⚠ 未识别：${unknownChars.join('、')}</span>`;
+  }
+
+  preview.innerHTML = stops + warnHTML;
   document.getElementById('routeMeta').textContent = `${state.routeNights}晚${state.routeDays}天 · ${state.hotels.length}个酒店`;
 
   renderHotels();
   updateCarDays();
   updateDiscountOptions();
-  calcMealTotal();
 }
 
-// ============================================================
-// 模板
-// ============================================================
+// ===== 快捷模板 =====
 function renderTemplates() {
   const bar = document.getElementById('templateBar');
   bar.innerHTML = TEMPLATES.map(t =>
     `<span class="template-tag" onclick="applyTemplate('${t.code}')">${t.name}</span>`
   ).join('');
 }
+
 function applyTemplate(code) {
   document.getElementById('routeCode').value = code;
   parseRouteCode();
 }
 
-// ============================================================
-// 酒店
-// ============================================================
+// ===== 酒店渲染 =====
 function renderHotels() {
   const list = document.getElementById('hotelList');
-  if (state.hotels.length === 0) {
-    list.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px;">输入行程编码自动生成酒店列表</div>';
-    document.getElementById('hotelTotal').textContent = '';
-    return;
+  // 酒店下拉按区域分组
+  const grouped = {};
+  for (const [code, db] of Object.entries(HOTEL_DB)) {
+    const region = db.region || '其他';
+    if (!grouped[region]) grouped[region] = [];
+    grouped[region].push({ code, ...db });
   }
+
+  const optionsHTML = Object.entries(grouped).map(([region, hotels]) => {
+    const tag = hotels[0].regionTag || '';
+    return `<optgroup label="── ${region} ──">${
+      hotels.map(h => `<option value="${h.code}">${h.code} — ${h.name}</option>`).join('')
+    }</optgroup>`;
+  }).join('');
+
   list.innerHTML = state.hotels.map((h, i) => `
-    <div class="item-card">
-      <div class="item-header">
-        <span style="font-family:monospace;color:var(--accent);background:#fdf4ed;padding:1px 7px;border-radius:4px;font-size:12px;font-weight:700;">${h.code}</span>
-        <select class="item-select" style="flex:1;padding:4px 7px;border:1px solid #e0dcd5;border-radius:6px;font-size:12px;background:#fff;" onchange="changeHotel(${i}, this.value)">
+    <div class="hotel-card">
+      <div class="hotel-top">
+        <span class="hotel-code">${h.code}</span>
+        <select class="hotel-select" onchange="changeHotelName(${i}, this.value)">
           ${Object.entries(HOTEL_DB).map(([code, db]) =>
             `<option value="${code}" ${code === h.code ? 'selected' : ''}>${code} — ${db.name}</option>`
           ).join('')}
         </select>
-        <button class="item-del" onclick="removeHotel(${i})">✕</button>
+        <button class="btn-sm danger" onclick="removeHotel(${i})" style="padding:2px 8px;font-size:11px;flex-shrink:0;">✕</button>
       </div>
-      <div class="item-row">
+      <div class="hotel-detail-row">
+        <label>房型</label>
+        <input value="${h.roomType || h.defaultRoomType}" onchange="state.hotels[${i}].roomType=this.value" placeholder="房型名称">
+        <span class="hotel-region"><span class="tag ${h.regionTag}">${h.region}</span></span>
+      </div>
+      <div class="hotel-detail-row">
         <label>单价</label>
-        <input type="number" value="${h.price != null ? h.price : h.defaultPrice}" step="0.01" style="flex:1;padding:4px 7px;border:1px solid #e0dcd5;border-radius:6px;font-size:12px;" onchange="state.hotels[${i}].price=parseFloat(this.value)||0;updateHotelTotal()">
-        <span style="font-size:11px;color:#888;flex-shrink:0;">元/晚</span>
+        <input type="number" value="${h.price != null ? h.price : h.defaultPrice}" step="0.01" onchange="state.hotels[${i}].price=parseFloat(this.value)||0" placeholder="元/晚" style="max-width:140px;">
+        <span style="font-size:11px;color:#888;">元/晚</span>
+        <label style="margin-left:12px;">晚数</label>
+        <div class="hotel-nights-ctrl">
+          <button class="nb" onclick="changeNights(${i}, -1)">−</button>
+          <span class="nv">${h.nights}</span>
+          <button class="nb" onclick="changeNights(${i}, 1)">+</button>
+        </div>
       </div>
-      <div class="item-row">
-        <label>晚数</label>
-        <button style="width:24px;height:24px;border-radius:50%;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:13px;" onclick="changeHotelNights(${i},-1)">−</button>
-        <span style="min-width:30px;text-align:center;font-weight:600;">${h.nights}</span>
-        <button style="width:24px;height:24px;border-radius:50%;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:13px;" onclick="changeHotelNights(${i},1)">+</button>
-        <label style="margin-left:12px;">房间数</label>
-        <input type="number" value="${h.rooms || 1}" min="1" style="width:50px;padding:4px 7px;border:1px solid #e0dcd5;border-radius:6px;font-size:12px;" onchange="state.hotels[${i}].rooms=parseInt(this.value)||1;updateHotelTotal()">
-        <span style="font-size:11px;color:#888;">间</span>
-      </div>
-      ${h.notes ? `<div style="font-size:10px;color:var(--warn);margin-left:36px;margin-top:2px;">⚠ ${h.notes}</div>` : ''}
+      ${h.notes ? `<div style="font-size:11px;color:var(--warn);margin-top:4px;">⚠ ${h.notes}</div>` : ''}
     </div>
   `).join('');
-  updateHotelTotal();
+
+  const totalNights = state.hotels.reduce((s, h) => s + h.nights, 0);
+  document.getElementById('hotelTotal').textContent = `合计 ${totalNights} 晚`;
 }
-function changeHotel(i, code) {
+
+function changeHotelName(i, code) {
   const db = HOTEL_DB[code];
   if (!db) return;
-  state.hotels[i] = { ...state.hotels[i], code, name: db.name, short: db.short, region: db.region, tag: db.tag, defaultRoomType: db.defaultRoomType, defaultPrice: db.defaultPrice, canExtraBed: db.canExtraBed, notes: db.notes, transfer: db.transfer, price: db.defaultPrice };
+  state.hotels[i] = { code, name: db.name, short: db.short, region: db.region, regionTag: db.regionTag, defaultRoomType: db.defaultRoomType, defaultPrice: db.defaultPrice, roomType: db.defaultRoomType, price: db.defaultPrice, canExtraBed: db.canExtraBed, notes: db.notes, transfer: db.transfer, nights: state.hotels[i].nights };
   renderHotels();
 }
-function changeHotelNights(i, d) {
-  const n = (state.hotels[i].nights || 1) + d;
+
+function changeNights(i, delta) {
+  const n = state.hotels[i].nights + delta;
   if (n < 1) return;
   state.hotels[i].nights = n;
   renderHotels();
   updateCarDays();
   updateDiscountOptions();
 }
+
+function addHotel() {
+  const firstCode = '波';
+  const db = HOTEL_DB[firstCode];
+  state.hotels.push({ code: firstCode, name: db.name, short: db.short, region: db.region, regionTag: db.regionTag, defaultRoomType: db.defaultRoomType, defaultPrice: db.defaultPrice, roomType: db.defaultRoomType, price: db.defaultPrice, canExtraBed: db.canExtraBed, notes: db.notes, transfer: db.transfer, nights: 1 });
+  renderHotels();
+  updateCarDays();
+  updateDiscountOptions();
+}
+
 function removeHotel(i) {
   state.hotels.splice(i, 1);
   renderHotels();
   updateCarDays();
   updateDiscountOptions();
 }
-function addHotel() {
-  const db = HOTEL_DB['波'];
-  state.hotels.push({ code: '波', name: db.name, short: db.short, region: db.region, tag: db.tag, defaultRoomType: db.defaultRoomType, defaultPrice: db.defaultPrice, canExtraBed: db.canExtraBed, notes: db.notes, transfer: db.transfer, price: db.defaultPrice, nights: 1, rooms: 1 });
-  renderHotels();
-  updateCarDays();
-  updateDiscountOptions();
-}
-function updateHotelTotal() {
-  const total = state.hotels.reduce((s, h) => s + (h.price || 0) * h.nights * (h.rooms || 1), 0);
-  const nights = state.hotels.reduce((s, h) => s + (h.nights || 0), 0);
-  document.getElementById('hotelTotal').textContent = `合计: ¥${total.toLocaleString()} (${nights}晚, ${state.hotels.reduce((s,h)=>s+(h.rooms||1),0)}间)`;
-}
 
-// ============================================================
-// 车辆
-// ============================================================
-function addCar() {
-  state.cars.push({ id: ++_carId, type: 'land_rover', count: 1, pricePer: 2800 });
-  renderCars();
-}
-function removeCar(id) {
-  state.cars = state.cars.filter(c => c.id !== id);
-  renderCars();
-}
-function renderCars() {
-  const list = document.getElementById('carList');
-  if (state.cars.length === 0) {
-    list.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px;">暂无车辆（点击下方添加）</div>';
-    document.getElementById('carSectionTotal').textContent = '';
-    return;
-  }
-  list.innerHTML = state.cars.map((c, i) => `
-    <div class="item-card">
-      <div class="item-header">
-        <select style="flex:1;padding:5px 7px;border:1px solid #e0dcd5;border-radius:6px;font-size:12px;background:#fff;" onchange="state.cars[${i}].type=this.value;renderCars()">
-          ${CAR_TYPES.map(t => `<option value="${t.value}" ${t.value === c.type ? 'selected' : ''}>${t.label}</option>`).join('')}
-        </select>
-        <button class="item-del" onclick="removeCar(${c.id})">✕</button>
-      </div>
-      <div class="item-row">
-        <label>数量</label>
-        <button style="width:22px;height:22px;border-radius:50%;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:12px;" onclick="changeCarCount(${i},-1)">−</button>
-        <span style="min-width:24px;text-align:center;font-weight:600;">${c.count}</span>
-        <button style="width:22px;height:22px;border-radius:50%;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:12px;" onclick="changeCarCount(${i},1)">+</button>
-        <label style="margin-left:10px;">包车费</label>
-        <input type="number" value="${c.pricePer}" step="10" style="flex:1;padding:4px 7px;border:1px solid #e0dcd5;border-radius:6px;font-size:12px;" onchange="state.cars[${i}].pricePer=parseFloat(this.value)||0;renderCars()">
-        <span style="font-size:11px;color:#888;">元/辆</span>
-      </div>
-    </div>
-  `).join('');
-  const total = state.cars.reduce((s, c) => s + c.count * c.pricePer, 0);
-  document.getElementById('carSectionTotal').textContent = `合计: ¥${total.toLocaleString()}`;
-}
-function changeCarCount(i, d) {
-  const n = (state.cars[i].count || 1) + d;
-  if (n < 1) return;
-  state.cars[i].count = n;
-  renderCars();
-}
-
-// ============================================================
-// 司机
-// ============================================================
-function addDriver() {
-  state.drivers.push({ id: ++_driverId, count: 1, dailyRate: 350 });
-  renderDrivers();
-}
-function removeDriver(id) {
-  state.drivers = state.drivers.filter(d => d.id !== id);
-  renderDrivers();
-}
-function renderDrivers() {
-  const list = document.getElementById('driverList');
-  if (state.drivers.length === 0) {
-    list.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px;">暂无司机档（点击下方添加）</div>';
-    document.getElementById('driverSectionTotal').textContent = '';
-    return;
-  }
-  list.innerHTML = state.drivers.map((d, i) => `
-    <div class="item-card">
-      <div class="item-header">
-        <span class="item-title">司机 ${i + 1}</span>
-        <button class="item-del" onclick="removeDriver(${d.id})">✕</button>
-      </div>
-      <div class="item-row">
-        <label>人数</label>
-        <button style="width:22px;height:22px;border-radius:50%;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:12px;" onclick="changeDriverCount(${i},-1)">−</button>
-        <span style="min-width:24px;text-align:center;font-weight:600;">${d.count}</span>
-        <button style="width:22px;height:22px;border-radius:50%;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:12px;" onclick="changeDriverCount(${i},1)">+</button>
-        <label style="margin-left:10px;">日单价</label>
-        <input type="number" value="${d.dailyRate}" step="10" style="flex:1;padding:4px 7px;border:1px solid #e0dcd5;border-radius:6px;font-size:12px;" onchange="state.drivers[${i}].dailyRate=parseFloat(this.value)||0;renderDrivers()">
-        <span style="font-size:11px;color:#888;">元/人/天</span>
-      </div>
-      <div class="item-sub">${d.count}人 × ${state.carDays}天 × ${d.dailyRate}元 = <strong style="color:var(--accent);">¥${(d.count * state.carDays * d.dailyRate).toLocaleString()}</strong></div>
-    </div>
-  `).join('');
-  const total = state.drivers.reduce((s, d) => s + d.count * state.carDays * d.dailyRate, 0);
-  document.getElementById('driverSectionTotal').textContent = `合计: ¥${total.toLocaleString()} (含${state.carDays}天)`;
-}
-function changeDriverCount(i, d) {
-  const n = (state.drivers[i].count || 1) + d;
-  if (n < 1) return;
-  state.drivers[i].count = n;
-  renderDrivers();
-}
-
-// ============================================================
-// 管家
-// ============================================================
-function addButler() {
-  state.butlers.push({ id: ++_butlerId, count: 1, dailyRate: 400 });
-  renderButlers();
-}
-function removeButler(id) {
-  state.butlers = state.butlers.filter(b => b.id !== id);
-  renderButlers();
-}
-function renderButlers() {
-  const list = document.getElementById('butlerList');
-  if (state.butlers.length === 0) {
-    list.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px;">暂无管家（选"私享管家"或"主题团"会自动包含）</div>';
-    document.getElementById('butlerSectionTotal').textContent = '';
-    return;
-  }
-  list.innerHTML = state.butlers.map((b, i) => `
-    <div class="item-card">
-      <div class="item-row">
-        <label>人数</label>
-        <button style="width:22px;height:22px;border-radius:50%;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:12px;" onclick="changeButlerCount(${i},-1)">−</button>
-        <span style="min-width:24px;text-align:center;font-weight:600;">${b.count}</span>
-        <button style="width:22px;height:22px;border-radius:50%;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:12px;" onclick="changeButlerCount(${i},1)">+</button>
-        <label style="margin-left:10px;">日单价</label>
-        <input type="number" value="${b.dailyRate}" step="10" style="flex:1;padding:4px 7px;border:1px solid #e0dcd5;border-radius:6px;font-size:12px;" onchange="state.butlers[${i}].dailyRate=parseFloat(this.value)||0;renderButlers()">
-        <span style="font-size:11px;color:#888;">元/人/天</span>
-      </div>
-      <div class="item-sub">${b.count}人 × ${state.carDays}天 × ${b.dailyRate}元 = <strong style="color:var(--accent);">¥${(b.count * state.carDays * b.dailyRate).toLocaleString()}</strong></div>
-      <button class="item-del" onclick="removeButler(${b.id})">✕</button>
-    </div>
-  `).join('');
-  const total = state.butlers.reduce((s, b) => s + b.count * state.carDays * b.dailyRate, 0);
-  document.getElementById('butlerSectionTotal').textContent = `合计: ¥${total.toLocaleString()} (含${state.carDays}天)`;
-}
-function changeButlerCount(i, d) {
-  const n = (state.butlers[i].count || 1) + d;
-  if (n < 1) return;
-  state.butlers[i].count = n;
-  renderButlers();
-}
-
-// ============================================================
-// 餐饮
-// ============================================================
-function calcMealTotal() {
-  const bp = parseFloat(document.getElementById('breakfastPrice').value) || 0;
-  const bc = parseInt(document.getElementById('breakfastCount').value) || 0;
-  const lp = parseFloat(document.getElementById('lunchPrice').value) || 0;
-  const lc = parseInt(document.getElementById('lunchCount').value) || 0;
-  const dp = parseFloat(document.getElementById('dinnerPrice').value) || 0;
-  const dc = parseInt(document.getElementById('dinnerCount').value) || 0;
-  const total = (bp * bc) + (lp * lc) + (dp * dc);
-  document.getElementById('mealTotal').textContent = `成人人均: ¥${total.toLocaleString()}（${state.routeDays}天）`;
-  document.getElementById('mealDaysHint').textContent = `含${bc}早+${lc}午+${dc}晚`;
-}
-
-// ============================================================
-// 活动
-// ============================================================
-function addActivity() {
-  const defaultNames = ['松赞林寺朝圣之旅', '纳帕海环湖', '普达措', '塔城村庄漫步', '梅里后山采蘑菇', '雨崩冰湖徒步'];
-  const usedNames = state.activities.map(a => a.name);
-  const nextName = defaultNames.find(n => !usedNames.includes(n)) || `活动${state.activities.length + 1}`;
-  state.activities.push({ id: ++_actId, name: nextName, pricePer: 100, count: 2 });
-  renderActivities();
-}
-function removeActivity(id) {
-  state.activities = state.activities.filter(a => a.id !== id);
-  renderActivities();
-}
-function renderActivities() {
-  const list = document.getElementById('activityList');
-  if (state.activities.length === 0) {
-    list.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px;">暂无活动（点击下方添加）</div>';
-    document.getElementById('activitySectionTotal').textContent = '';
-    return;
-  }
-  list.innerHTML = state.activities.map((a, i) => `
-    <div class="item-card">
-      <div class="item-header">
-        <input type="text" value="${a.name}" list="activityElements" style="flex:1;padding:4px 7px;border:1px solid #e0dcd5;border-radius:6px;font-size:12px;" onchange="state.activities[${i}].name=this.value;renderActivities()">
-        <button class="item-del" onclick="removeActivity(${a.id})">✕</button>
-      </div>
-      <div class="item-row">
-        <label>单价</label>
-        <input type="number" value="${a.pricePer}" step="5" style="flex:1;padding:4px 7px;border:1px solid #e0dcd5;border-radius:6px;font-size:12px;" onchange="state.activities[${i}].pricePer=parseFloat(this.value)||0;renderActivities()">
-        <span style="font-size:11px;color:#888;">元/人</span>
-        <label style="margin-left:8px;">次数</label>
-        <input type="number" value="${a.count}" min="0" style="width:50px;padding:4px 7px;border:1px solid #e0dcd5;border-radius:6px;font-size:12px;" onchange="state.activities[${i}].count=parseInt(this.value)||0;renderActivities()">
-        <span style="font-size:11px;color:#888;">次</span>
-      </div>
-      <div class="item-sub">${a.pricePer}元 × ${a.count}次 = <strong style="color:var(--accent);">¥${(a.pricePer * a.count).toLocaleString()}/人</strong></div>
-    </div>
-  `).join('');
-  const total = state.activities.reduce((s, a) => s + a.pricePer * a.count, 0);
-  document.getElementById('activitySectionTotal').textContent = `合计: ¥${total.toLocaleString()}/人`;
-}
-
-// ============================================================
-// 产品形态
-// ============================================================
-function setTripType(type) {
-  state.tripType = type;
-  document.querySelectorAll('.trip-type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === type));
-  const sub = document.getElementById('butlerSub');
-  if (type === 'private') sub.textContent = '私享管家形态包含管家服务';
-  else if (type === 'group') sub.textContent = '主题团形态包含管家服务';
-  else sub.textContent = '自由行无管家，可手动添加';
-
-  // 自动添加默认管家
-  if ((type === 'private' || type === 'group') && state.butlers.length === 0) {
-    state.butlers.push({ id: ++_butlerId, count: 1, dailyRate: 400 });
-    renderButlers();
-  }
-  updateCarDays();
-}
-
-// ============================================================
-// 人员
-// ============================================================
+// ===== 人员 =====
 function changePerson(type, delta) {
   if (type === 'adult') {
-    state.adultCount = Math.max(1, Math.min(20, state.adultCount + delta));
+    state.adultCount = Math.max(1, Math.min(10, state.adultCount + delta));
     document.getElementById('adultCount').textContent = state.adultCount;
   } else {
-    state.childCount = Math.max(0, Math.min(10, state.childCount + delta));
+    state.childCount = Math.max(0, Math.min(5, state.childCount + delta));
     document.getElementById('childCount').textContent = state.childCount;
   }
-  document.getElementById('childConfigRow').style.display = state.childCount > 0 ? '' : 'none';
+  toggleChildFields();
 }
 
-// ============================================================
-// 车司天数
-// ============================================================
+function toggleChildFields() {
+  const show = state.childCount > 0;
+  document.getElementById('childAgeRow').style.display = show ? '' : 'none';
+  document.getElementById('bedTypeRow').style.display = show ? '' : 'none';
+  document.querySelectorAll('.person-card').forEach(c => c.classList.remove('active'));
+  if (state.childCount > 0) document.querySelectorAll('.person-card').forEach(c => c.classList.add('active'));
+  else document.querySelector('.person-card').classList.add('active');
+}
+
+// ===== 产品形态 =====
+function onTripTypeChange() {
+  const type = document.getElementById('tripType').value;
+  document.getElementById('butlerRow').style.display = (type === 'private' || type === 'group') ? '' : 'none';
+  document.getElementById('butlerHint').textContent = (type === 'private' || type === 'group') ? '  |  管家已包含' : '';
+  updateCarDays();
+}
+
+// ===== 车司天数 =====
 function updateCarDays() {
-  const type = state.tripType;
+  const type = document.getElementById('tripType').value;
   const transfer = document.getElementById('transferType').value;
-  const totalNights = state.hotels.reduce((s, h) => s + (h.nights || 0), 0);
-  let days;
+  const totalNights = state.hotels.reduce((s, h) => s + h.nights, 0);
+
+  let base;
   if (type === 'free') {
-    days = totalNights + 1 - 0.5;
+    // 自由行：行程天数 − 0.5
+    base = totalNights + 1 - 0.5;
   } else {
-    days = totalNights;
-    if (transfer === 'am_am' || transfer === 'pm_pm') days += 0.5;
-    if (transfer === 'am_pm') days += 1;
+    // 主题团/私享：按接送机组合
+    base = totalNights; // 下午接+上午送
+    if (transfer === 'am_am' || transfer === 'pm_pm') base += 0.5;
+    if (transfer === 'am_pm') base += 1;
   }
-  state.carDays = days;
-  // 更新显示
-  const el = document.getElementById('carDaysDisplay');
-  if (el) el.textContent = days.toFixed(1);
-  renderDrivers();
-  renderButlers();
-  calcMealTotal();
+
+  document.getElementById('carDays').value = base.toFixed(1);
+  updateCarDriverDisplay();
 }
 
-// ============================================================
-// 季节 & 折扣
-// ============================================================
+function updateCarDriverDisplay() {
+  const car = parseFloat(document.getElementById('carCost').value) || 0;
+  const driver = parseFloat(document.getElementById('driverCost').value) || 0;
+  const days = parseFloat(document.getElementById('carDays').value) || 0;
+  const total = car + driver * days;
+  document.getElementById('carDriverTotal').textContent = total.toLocaleString();
+  document.getElementById('carDriverCalc').textContent = `${car} + ${driver}×${days}`;
+}
+
+// ===== 季节 & 折扣 =====
+function renderSeasonGrid() {
+  const grid = document.getElementById('seasonGrid');
+  if (!grid) return;
+  document.getElementById('disp-overhead').textContent = Math.round(RATE_CONFIG.overheadRate * 100);
+  document.getElementById('disp-base').textContent    = Math.round(RATE_CONFIG.baseCostRate * 100);
+
+  grid.innerHTML = Object.entries(SEASON_CONFIG).map(([key, cfg]) => {
+    const profitPct = (cfg.profitRate * 100).toFixed(1);
+    const costPct   = (cfg.costRate * 100).toFixed(1);
+    const isActive  = key === state.season;
+    return `<div class="season-btn ${isActive ? 'active' : ''}" data-season="${key}" onclick="selectSeason('${key}')">
+      <div class="s-name">${cfg.name}</div>
+      <div class="s-rate">成本率 ${costPct}%</div>
+      <div class="s-rate" style="color:${cfg.color};">利润率 ${profitPct}%</div>
+    </div>`;
+  }).join('');
+}
+
 function selectSeason(s) {
   state.season = s;
-  document.querySelectorAll('.season-btn').forEach(b => b.classList.toggle('active', b.dataset.season === s));
+  renderSeasonGrid();
 }
 
 function updateDiscountOptions() {
   const line = document.getElementById('routeLine').value;
-  const nights = state.hotels.reduce((s, h) => s + (h.nights || 0), 0);
+  const nights = state.hotels.reduce((s, h) => s + h.nights, 0);
   const isLong = nights >= 7;
   const cfg = PRESELL_CONFIG[line][isLong ? 'long' : 'short'];
+
+  const area = document.getElementById('discountArea');
   const discounts = [
     { rate: 1, label: '无折扣', sub: '原价' },
-    { rate: cfg.m1, label: `${Math.round(cfg.m1 * 100)}折`, sub: `提前1个月` },
-    { rate: cfg.m2, label: `${Math.round(cfg.m2 * 100)}折`, sub: `提前2个月` },
+    { rate: cfg.m1, label: `${Math.round(cfg.m1*100)}折`, sub: `提前1个月 · ${cfg.label}` },
+    { rate: cfg.m2, label: `${Math.round(cfg.m2*100)}折`, sub: `提前2个月 · ${cfg.label}` }
   ];
-  const current = state.discount;
-  if (!discounts.some(d => d.rate === current)) state.discount = 1;
 
-  document.getElementById('discountArea').innerHTML =
-    `<div style="font-size:10px;color:var(--muted);margin-bottom:8px;">${cfg.label} · ${nights}晚</div>` +
-    `<div class="discount-grid">` +
-    discounts.map(d =>
-      `<div class="discount-card ${d.rate === state.discount ? 'active' : ''}" onclick="selectDiscount(${d.rate})">` +
-      `<div class="d-rate">${d.label}</div><div class="d-label">${d.sub}</div></div>`
-    ).join('') +
-    `</div>`;
+  const currentDiscount = state.discount;
+  const hasCurrent = discounts.some(d => d.rate === currentDiscount);
+  if (!hasCurrent) state.discount = 1;
+
+  area.innerHTML = `<div style="font-size:11px;color:var(--muted);margin-bottom:8px;">当前环线：${cfg.label}（${nights}晚，${isLong ? '≥7晚长线' : '<7晚短线'}）</div><div class="discount-grid">${
+    discounts.map(d => `
+      <div class="discount-card ${d.rate === state.discount ? 'active' : ''}" onclick="selectDiscount(${d.rate})">
+        <div class="d-rate">${d.label}</div>
+        <div class="d-label">${d.sub}</div>
+      </div>
+    `).join('')
+  }</div>`;
 }
 
 function selectDiscount(d) {
@@ -941,9 +724,7 @@ function selectDiscount(d) {
   updateDiscountOptions();
 }
 
-// ============================================================
-// Toast
-// ============================================================
+// ===== Toast =====
 function showToast(msg, warn) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -951,689 +732,219 @@ function showToast(msg, warn) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// ============================================================
-// 核心计价
-// ============================================================
+// ===== 核心计价 =====
 function calculate() {
   const sc = SEASON_CONFIG[state.season];
   const adultCount = state.adultCount;
   const childCount = state.childCount;
 
-  if (state.hotels.length === 0) { showToast('请输入行程编码', true); return; }
-  const totalNights = state.hotels.reduce((s, h) => s + (h.nights || 0), 0);
+  if (state.hotels.length === 0) { showToast('请输入行程编码或添加酒店', true); return; }
+  const totalNights = state.hotels.reduce((s, h) => s + h.nights, 0);
   if (totalNights === 0) { showToast('酒店晚数不能为0', true); return; }
 
-  // ── 收集输入 ──────────────────────────────────
-  const bp = parseFloat(document.getElementById('breakfastPrice').value) || 0;
-  const bc = parseInt(document.getElementById('breakfastCount').value) || 0;
-  const lp = parseFloat(document.getElementById('lunchPrice').value) || 0;
-  const lc = parseInt(document.getElementById('lunchCount').value) || 0;
-  const dp = parseFloat(document.getElementById('dinnerPrice').value) || 0;
-  const dc = parseInt(document.getElementById('dinnerCount').value) || 0;
-  const insurance = parseFloat(document.getElementById('insurance').value) || 0;
-  const snack = parseFloat(document.getElementById('snack').value) || 0;
+  // 获取输入
+  const carCost = parseFloat(document.getElementById('carCost').value) || 0;
+  const driverDaily = parseFloat(document.getElementById('driverCost').value) || 0;
+  const carDays = parseFloat(document.getElementById('carDays').value) || 0;
+  const butlerDaily = (document.getElementById('tripType').value !== 'free') ? (parseFloat(document.getElementById('butlerCost').value) || 0) : 0;
+  const activityCost = parseFloat(document.getElementById('activityCost').value) || 0;
+  const foodCost = parseFloat(document.getElementById('foodCost').value) || 0;
+  const insuranceCost = parseFloat(document.getElementById('insuranceCost').value) || 0;
+  const snackCost = parseFloat(document.getElementById('snackCost').value) || 0;
   const childAge = parseInt(document.getElementById('childAge').value) || 0;
   const bedType = document.getElementById('bedType').value;
+  const tripType = document.getElementById('tripType').value;
+  const tripTypeLabel = { free: '自由行', private: '私享管家', group: '主题团' }[tripType];
 
-  // ── 1. 酒店成本 ───────────────────────────────
-  // 成人承担所有房间费用（儿童不分摊）
-  const hotelTotalCost = state.hotels.reduce((s, h) => {
-    const rooms = h.rooms || 1;
-    const price = h.price || 0;
-    return s + price * h.nights * rooms;
-  }, 0);
+  // 1. 酒店总成本
+  const hotelTotalCost = state.hotels.reduce((s, h) => s + (h.price || 0) * h.nights, 0);
 
-  // ── 2. 车辆成本 ────────────────────────────────
-  const carTotalCost = state.cars.reduce((s, c) => s + c.count * c.pricePer, 0);
+  // 2. 车司合计
+  const driverCost = driverDaily * carDays;
+  const carDriverTotal = carCost + driverCost;
 
-  // ── 3. 司机成本 ────────────────────────────────
-  const driverTotalCost = state.drivers.reduce((s, d) => s + d.count * state.carDays * d.dailyRate, 0);
+  // 3. 管家
+  const butlerTotal = butlerDaily * carDays;
 
-  // ── 4. 管家成本 ────────────────────────────────
-  const butlerTotalCost = state.butlers.reduce((s, b) => s + b.count * state.carDays * b.dailyRate, 0);
-
-  // ── 5. 餐饮成本 ───────────────────────────────
-  const adultMealCost = bp * bc + lp * lc + dp * dc;
+  // 4. 儿童餐饮折扣
   let childFoodRate = childAge < 6 ? 0.3 : childAge <= 11 ? 0.7 : 1.0;
-  const childMealCost = adultMealCost * childFoodRate;
 
-  // ── 6. 活动成本 ────────────────────────────────
-  const adultActivityCost = state.activities.reduce((s, a) => s + a.pricePer * a.count, 0);
+  // 5. 成人均摊
+  const hotelPerAdult = hotelTotalCost / adultCount;
+  const carDriverPerAdult = carDriverTotal / adultCount;
+  const butlerPerAdult = butlerTotal / adultCount;
+  const elementPerAdult = activityCost + foodCost + insuranceCost + snackCost;
+  const adultTotalCost = hotelPerAdult + carDriverPerAdult + butlerPerAdult + elementPerAdult;
+  const adultPrice = adultTotalCost / sc.costRate;
 
-  // ── 7. 成人总成本 ─────────────────────────────
-  // 成人均摊：酒店全部 + 车辆全部 + 司机全部 + 管家全部 + 餐饮 + 活动 + 保险 + 零食
-  const adultCost = hotelTotalCost + carTotalCost + driverTotalCost + butlerTotalCost +
-    adultMealCost + adultActivityCost + insurance + snack;
-  const adultPrice = adultCost / sc.costRate;
-
-  // ── 8. 儿童成本 ───────────────────────────────
-  let childCost = 0;
+  // 6. 儿童
+  let childTotalCost = 0, childPrice = 0;
   if (childCount > 0) {
     const childHotelCost = bedType === 'share' ? hotelTotalCost : 0;
-    // 儿童不分摊车司管，活动同成人价
-    childCost = childHotelCost + adultMealCost * childFoodRate + adultActivityCost + insurance + snack;
+    const childFood = foodCost * childFoodRate;
+    const childElementCost = activityCost + childFood + insuranceCost + snackCost;
+    childTotalCost = childHotelCost + childElementCost;
+    childPrice = childTotalCost / sc.costRate;
   }
-  const childPrice = childCost / sc.costRate;
 
-  // ── 9. 最终价格 ────────────────────────────────
+  // 7. 折扣
   const adultPriceFinal = Math.round(adultPrice * state.discount);
   const childPriceFinal = childCount > 0 ? Math.round(childPrice * state.discount) : 0;
-  const totalGroupPrice = adultPriceFinal * adultCount + childPriceFinal * childCount;
+  const roomTotal = adultPriceFinal * adultCount + childPriceFinal * childCount;
 
-  // ── 10. 四季对比 ──────────────────────────────
+  // 8. 注意事项
+  const notices = [];
+  state.hotels.forEach(h => {
+    if (!h.canExtraBed && bedType === 'extra') {
+      notices.push({ type: 'warn', text: `${h.name}（${h.code}）不支持加床，需提前确认` });
+    }
+    if (h.notes) notices.push({ type: 'info', text: `${h.short}（${h.code}）：${h.notes}` });
+  });
+  if (tripType === 'free') notices.push({ type: 'ok', text: `自由行用车天数 ${carDays} 天（${totalNights + 1}天行程 − 0.5天）` });
+  if (butlerDaily > 0) notices.push({ type: 'ok', text: `包含管家服务：${butlerDaily}元/天 × ${carDays}天 = ${butlerTotal.toLocaleString()}元（成人平摊）` });
+  if (childAge >= 12) notices.push({ type: 'info', text: '12岁+餐饮按成人价计算' });
+  if (childCount > 0) notices.push({ type: 'ok', text: '儿童不分摊车司管费用（由同行成人承担）' });
+  if (state.discount < 1) notices.push({ type: 'info', text: `预售折扣 ${Math.round(state.discount * 100)}%，原价：成人 ¥${Math.round(adultPrice).toLocaleString()}/人` });
+
+  // 9. 四季对比
   const seasonPrices = {};
   for (const [key, cfg] of Object.entries(SEASON_CONFIG)) {
-    const adultBase = adultCost / cfg.costRate;
-    const childBase = childCount > 0 ? childCost / cfg.costRate : 0;
     seasonPrices[key] = {
-      adult: Math.round(adultBase * state.discount),
-      child: Math.round(childBase * state.discount),
+      name: cfg.name,
+      profitRate: cfg.profitRate,
+      costRate: cfg.costRate,
+      adult: Math.round((adultTotalCost / cfg.costRate) * state.discount),
+      child: childCount > 0 ? Math.round((childTotalCost / cfg.costRate) * state.discount) : 0
     };
   }
 
-  // ── 11. 注意事项 ──────────────────────────────
-  const notices = [];
-  state.hotels.forEach(h => {
-    if (!h.canExtraBed && bedType === 'extra') notices.push({ type: 'warn', text: `${h.short}（${h.code}）不支持加床` });
-    if (h.notes) notices.push({ type: 'info', text: `${h.short}：${h.notes}` });
-  });
-  notices.push({ type: 'ok', text: `车司管计费天数：${state.carDays}天` });
-  if (childCount > 0) notices.push({ type: 'ok', text: `儿童(${childAge}岁·${bedType === 'extra' ? '加床' : '占床'})不分摊车司管费用` });
-  if (adultActivityCost > 0) notices.push({ type: 'info', text: `活动：${adultActivityCost}元/人` });
-  if (state.discount < 1) notices.push({ type: 'info', text: `预售${Math.round(state.discount * 100)}%折，原价成人¥${Math.round(adultPrice).toLocaleString()}/人` });
-
-  // ── 渲染 ──────────────────────────────────────
   renderResult({
-    sc, adultCount, childCount, childAge, bedType,
-    totalNights, totalDays: state.routeDays,
+    tripTypeLabel, totalNights, totalDays: totalNights + 1, adultCount, childCount,
+    childAge, bedType, bedTypeLabel: bedType === 'extra' ? '加床' : '占床',
     hotels: state.hotels, hotelTotalCost,
-    cars: state.cars, carTotalCost,
-    drivers: state.drivers, driverTotalCost,
-    butlers: state.butlers, butlerTotalCost,
-    bp, bc, lp, lc, dp, dc, adultMealCost, childMealCost, childFoodRate,
-    activities: state.activities, adultActivityCost,
-    insurance, snack,
-    adultCost, adultPrice: Math.round(adultPrice), adultPriceFinal,
-    childCost, childPrice: Math.round(childPrice), childPriceFinal,
-    totalGroupPrice,
-    seasonPrices,
-    discount: state.discount, notices
+    carCost, driverDaily, carDays, driverCost, carDriverTotal,
+    butlerDaily, butlerTotal, butlerPerAdult,
+    activityCost, foodCost, insuranceCost, snackCost,
+    hotelPerAdult, carDriverPerAdult, elementPerAdult,
+    adultTotalCost, adultPrice: Math.round(adultPrice), adultPriceFinal,
+    childTotalCost, childPrice: childCount > 0 ? Math.round(childPrice) : 0, childPriceFinal,
+    childFoodRate, roomTotal,
+    season: state.season, seasonConfig: sc, seasonPrices,
+    discount: state.discount, notices,
+    rateConfig: RATE_CONFIG
   });
 }
 
-// ============================================================
-// 渲染结果
-// ============================================================
+// ===== 渲染结果 =====
 function renderResult(r) {
-  const tripLabels = { free: '自由行', private: '私享管家', group: '主题团' };
-  const bedLabels = { extra: '加床', share: '占床' };
+  const area = document.getElementById('resultArea');
+  const hotelRows = r.hotels.map(h => `
+    <tr>
+      <td><span style="font-family:monospace;color:var(--accent);background:#fdf4ed;padding:1px 6px;border-radius:4px;font-size:12px;">${h.code}</span> <strong>${h.short}</strong></td>
+      <td>${h.nights}</td>
+      <td>${(h.price || 0).toFixed(2)}</td>
+      <td>${((h.price || 0) * h.nights).toFixed(2)}</td>
+      <td><span style="font-size:11px;color:#888;">${h.roomType || h.defaultRoomType}</span> <span class="tag ${h.regionTag}" style="padding:1px 5px;border-radius:4px;font-size:10px;">${h.region}</span></td>
+    </tr>`).join('');
 
-  // 酒店行
-  const hotelRows = r.hotels.map(h =>
-    `<tr><td><strong>${h.short}</strong>（${h.code}）</td><td>${h.nights}晚</td><td>${h.rooms || 1}间</td><td>¥${(h.price || 0).toFixed(0)}</td><td>¥${((h.price || 0) * h.nights * (h.rooms || 1)).toLocaleString()}</td></tr>`
-  ).join('');
-
-  // 车辆行
-  const carRows = r.cars.length > 0 ? r.cars.map(c =>
-    `<tr><td>🚗 ${CAR_TYPES.find(t => t.value === c.type)?.label || c.type}</td><td>×${c.count}辆</td><td>¥${c.pricePer}/辆</td><td>¥${(c.count * c.pricePer).toLocaleString()}</td></tr>`
-  ).join('') : `<tr><td colspan="4" style="color:var(--muted);font-size:12px;">未配置车辆</td></tr>`;
-
-  // 司机行
-  const driverRows = r.drivers.length > 0 ? r.drivers.map(d =>
-    `<tr><td>🚙 司机</td><td>×${d.count}人</td><td>¥${d.dailyRate}/人/天×${state.carDays}天</td><td>¥${(d.count * state.carDays * d.dailyRate).toLocaleString()}</td></tr>`
-  ).join('') : `<tr><td colspan="4" style="color:var(--muted);font-size:12px;">未配置司机</td></tr>`;
-
-  // 管家行
-  const butlerRows = r.butlers.length > 0 ? r.butlers.map(b =>
-    `<tr><td>🧑‍💼 ${b.type}</td><td>×${b.count}人</td><td>¥${b.dailyRate}/人/天×${state.carDays}天</td><td>¥${(b.count * state.carDays * b.dailyRate).toLocaleString()}</td></tr>`
-  ).join('') : `<tr><td colspan="4" style="color:var(--muted);font-size:12px;">无管家</td></tr>`;
-
-  // 餐饮行
-  const mealRows = `
-    <tr><td>🍽 早餐</td><td>${r.bc}餐</td><td>¥${r.bp}/人</td><td>¥${(r.bp * r.bc).toLocaleString()}</td></tr>
-    <tr><td>🍽 午餐</td><td>${r.lc}餐</td><td>¥${r.lp}/人</td><td>¥${(r.lp * r.lc).toLocaleString()}</td></tr>
-    <tr><td>🍽 晚餐</td><td>${r.dc}餐</td><td>¥${r.dp}/人</td><td>¥${(r.dp * r.dc).toLocaleString()}</td></tr>
-    <tr class="subtotal-row"><td>餐饮合计</td><td></td><td></td><td>¥${r.adultMealCost.toLocaleString()}/人</td></tr>
-  `;
-
-  // 活动行
-  const actRows = r.activities.length > 0 ? r.activities.map(a =>
-    `<tr><td>🎯 ${a.name}</td><td>×${a.count}次</td><td>¥${a.pricePer}/人</td><td>¥${(a.pricePer * a.count).toLocaleString()}</td></tr>`
-  ).join('') : `<tr><td colspan="4" style="color:var(--muted);font-size:12px;">未配置活动</td></tr>`;
-
-  // 四季卡片
-  const seasonCards = Object.entries(SEASON_CONFIG).map(([k, c]) =>
-    `<div class="sc-card ${k === state.season ? 'active' : ''}" style="background:${c.bg};">
-      <div class="sc-name">${c.name}</div>
-      <div class="sc-adult">¥${r.seasonPrices[k].adult.toLocaleString()}</div>
-      ${r.childCount > 0 ? `<div class="sc-child">儿童 ¥${r.seasonPrices[k].child.toLocaleString()}</div>` : ''}
-    </div>`
-  ).join('');
-
-  const noticeHTML = r.notices.map(n =>
-    `<li><span class="notice-icon">${n.type === 'warn' ? '⚠️' : n.type === 'ok' ? '✅' : 'ℹ️'}</span><span>${n.text}</span></li>`
-  ).join('');
+  const butlerSection = r.butlerDaily > 0 ? `
+    <tr style="background:#fdf6ed;"><td colspan="5" style="font-weight:700;color:var(--primary);padding:14px 12px;">🧳 管家</td></tr>
+    <tr><td>管家费用</td><td>${r.carDays}天 × ${r.butlerDaily}</td><td>${r.butlerDaily}</td><td>${r.butlerPerAdult.toFixed(2)}</td><td style="font-size:12px;color:#888;">成人平摊</td></tr>` : '';
 
   const childHTML = r.childCount > 0 ? `
-    <div class="card">
-      <h3>👦 儿童（${r.childAge}岁 · ${bedLabels[r.bedType]}）</h3>
-      <table class="cost-table">
-        <thead><tr><th>项目</th><th>说明</th><th>单价</th><th>小计</th></tr></thead>
-        <tbody>
-          <tr><td>酒店</td><td>${r.bedType === 'share' ? '独占1间（同成人价）' : '加床（不另收费）'}</td><td></td><td>${r.bedType === 'share' ? '¥' + r.hotelTotalCost.toLocaleString() : '¥0'}</td></tr>
-          <tr><td>餐饮</td><td>${r.childAge < 6 ? '<6岁 3折' : r.childAge <= 11 ? '6-11岁 7折' : '12岁+ 同成人'}</td><td>¥${r.adultMealCost}×${Math.round(r.childFoodRate * 100)}%</td><td>¥${r.childMealCost.toLocaleString()}</td></tr>
-          <tr><td>活动</td><td>同成人</td><td>¥${r.adultActivityCost}</td><td>¥${r.adultActivityCost.toLocaleString()}</td></tr>
-          <tr><td>保险</td><td>同成人</td><td>¥${r.insurance}</td><td>¥${r.insurance}</td></tr>
-          <tr><td>零食</td><td>同成人</td><td>¥${r.snack}</td><td>¥${r.snack}</td></tr>
-          <tr class="subtotal-row"><td>儿童成本合计</td><td></td><td></td><td>¥${r.childCost.toLocaleString()}</td></tr>
-          <tr class="final-row"><td>儿童打包价</td><td>÷${SEASON_CONFIG[state.season].costRate}${r.discount < 1 ? `×${Math.round(r.discount * 100)}%` : ''}</td><td></td><td><strong>¥${r.childPriceFinal.toLocaleString()}/人</strong></td></tr>
-        </tbody>
-      </table>
-    </div>
+    <tr style="background:#fdf6ed;"><td colspan="5" style="font-weight:700;color:var(--accent);padding:14px 12px;">👦 儿童成本（${r.childAge}岁 · ${r.bedTypeLabel}）</td></tr>
+    <tr><td>酒店</td><td>—</td><td>—</td><td>${r.bedType === 'share' ? r.hotelTotalCost.toFixed(2) : '0.00'}</td><td style="font-size:12px;color:#888;">${r.bedType === 'extra' ? '加床不额外计费' : '独占一间'}</td></tr>
+    <tr><td>车司 + 管家</td><td>—</td><td>—</td><td>0.00</td><td style="font-size:12px;color:#888;">儿童不分摊</td></tr>
+    <tr><td>活动</td><td></td><td>${r.activityCost}</td><td>${r.activityCost}</td><td style="font-size:12px;color:#888;">同成人</td></tr>
+    <tr><td>餐饮</td><td></td><td>${r.foodCost} × ${Math.round(r.childFoodRate*100)}%</td><td>${(r.foodCost * r.childFoodRate).toFixed(2)}</td><td style="font-size:12px;color:#888;">${r.childAge < 6 ? '<6岁3折' : r.childAge <= 11 ? '6-11岁7折' : '12岁+同成人'}</td></tr>
+    <tr><td>保险</td><td></td><td>${r.insuranceCost}</td><td>${r.insuranceCost}</td><td style="font-size:12px;color:#888;">同成人</td></tr>
+    <tr><td>零食</td><td></td><td>${r.snackCost}</td><td>${r.snackCost}</td><td style="font-size:12px;color:#888;">同成人</td></tr>
+    <tr class="total-row"><td>儿童成本合计</td><td></td><td></td><td>${r.childTotalCost.toFixed(2)}</td><td></td></tr>
+    <tr class="price-row"><td>÷ 成本率 ${(r.seasonConfig.costRate*100).toFixed(1)}%${r.discount < 1 ? ` × 预售${Math.round(r.discount*100)}%` : ''}</td><td></td><td></td><td>= <strong>¥${r.childPriceFinal.toLocaleString()}</strong></td><td style="font-size:12px;">打包价</td></tr>
   ` : '';
 
-  document.getElementById('resultArea').innerHTML = `
-    <div class="result-header">
-      <h2>${tripLabels[state.tripType]} · ${r.sc.name}计价</h2>
-      <div class="route">${r.hotels.map((h, i) => `<span class="stop">${h.short}</span>${i < r.hotels.length - 1 ? '<span class="arrow">→</span>' : ''}`).join('')}</div>
-      <div class="meta">${r.totalDays}天${r.totalNights}晚 · ${r.adultCount}成人${r.childCount > 0 ? ` + ${r.childCount}儿童` : ''} · 成本率 ${(r.sc.costRate * 100)}%</div>
-    </div>
+  const seasonCards = Object.entries(SEASON_CONFIG).map(([k, c]) => {
+    const sp = r.seasonPrices[k];
+    const profitPct = (sp.profitRate * 100).toFixed(1);
+    const isActive = k === r.season;
+    return `<div class="sc-card ${isActive ? 'active' : ''}" style="background:${c.bg};">
+      <div class="sc-name">${c.name}${isActive ? ' ★' : ''}</div>
+      <div class="sc-adult">¥${sp.adult.toLocaleString()}</div>
+      ${r.childCount > 0 ? `<div class="sc-child">儿童 ¥${sp.child.toLocaleString()}</div>` : ''}
+      <div style="font-size:10px;color:#999;margin-top:4px;">利润率 ${profitPct}%</div>
+    </div>`;
+  }).join('');
 
+  const noticeHTML = r.notices.map(n => `<li><span class="notice-icon">${n.type==='warn'?'⚠️':n.type==='ok'?'✅':'ℹ️'}</span><span>${n.text}</span></li>`).join('');
+
+  area.innerHTML = `
+    <div class="result-header">
+      <h2>${r.tripTypeLabel} · ${r.seasonConfig.name}计价</h2>
+      <div class="meta">${r.totalDays}天${r.totalNights}晚 · ${r.adultCount}成人${r.childCount > 0 ? ` + ${r.childCount}儿童(${r.childAge}岁·${r.bedTypeLabel})` : ''} · 成本率 ${(r.seasonConfig.costRate*100).toFixed(1)}%（利润率 ${(r.seasonConfig.profitRate*100).toFixed(1)}%）</div>
+      <div class="route">${r.hotels.map((h,i) => `<span class="stop">${h.short}</span>${i<r.hotels.length-1?'<span class="arrow">→</span>':''}`).join('')}</div>
+    </div>
     <div class="card">
-      <h3>💰 报价总览${r.discount < 1 ? `（预售${Math.round(r.discount * 100)}%）` : ''}</h3>
+      <h3>💰 报价总览${r.discount < 1 ? `（预售${Math.round(r.discount*100)}折）` : ''}</h3>
       <div class="price-overview">
-        <div class="price-card">
-          <div class="p-label">成人价 / 人</div>
-          <div class="p-value adult">¥${r.adultPriceFinal.toLocaleString()}</div>
-          ${r.discount < 1 ? `<div class="p-unit">原价 ¥${r.adultPrice.toLocaleString()}</div>` : ''}
-        </div>
-        ${r.childCount > 0 ? `
-          <div class="price-card">
-            <div class="p-label">儿童价 / 人</div>
-            <div class="p-value child">¥${r.childPriceFinal.toLocaleString()}</div>
-            ${r.discount < 1 ? `<div class="p-unit">原价 ¥${r.childPrice.toLocaleString()}</div>` : ''}
-          </div>
-        ` : ''}
-        <div class="price-card">
-          <div class="p-label">${r.adultCount}大${r.childCount > 0 ? r.childCount + '小' : ''} 总计</div>
-          <div class="p-value total">¥${r.totalGroupPrice.toLocaleString()}</div>
-          <div class="p-unit">房间总价</div>
-        </div>
+        <div class="price-card"><div class="p-label">成人价/人</div><div class="p-value adult">¥${r.adultPriceFinal.toLocaleString()}</div>${r.discount < 1 ? `<div class="p-unit">原价 ¥${r.adultPrice.toLocaleString()}</div>` : ''}</div>
+        ${r.childCount > 0 ? `<div class="price-card"><div class="p-label">儿童价/人</div><div class="p-value child">¥${r.childPriceFinal.toLocaleString()}</div>${r.discount < 1 ? `<div class="p-unit">原价 ¥${r.childPrice.toLocaleString()}</div>` : ''}</div>` : ''}
+        <div class="price-card"><div class="p-label">${r.adultCount}大${r.childCount > 0 ? r.childCount+'小' : ''} 总计</div><div class="p-value total">¥${r.roomTotal.toLocaleString()}</div><div class="p-unit">房间内总价</div></div>
       </div>
     </div>
-
     <div class="card">
-      <h3>📅 四季对比</h3>
+      <h3>📅 四季对比（利润率 = 集团分摊10% + 基础成本率5% − 季节成本率）</h3>
       <div class="season-compare">${seasonCards}</div>
     </div>
-
     <div class="card">
       <h3>🔍 成本拆解</h3>
       <table class="cost-table">
-        <thead><tr><th>项目</th><th>规格</th><th>单价</th><th>小计</th></tr></thead>
+        <thead><tr><th>元素</th><th>晚数/天数</th><th>单价</th><th>每成人成本</th><th>说明</th></tr></thead>
         <tbody>
-          <tr style="background:#fdf6ed;font-weight:700;"><td colspan="4" style="color:var(--primary);padding:10px 12px;">🏨 酒店（全部由成人承担）</td></tr>
+          <tr style="background:#fdf6ed;"><td colspan="5" style="font-weight:700;color:var(--primary);padding:14px 12px;">🏨 酒店住宿</td></tr>
           ${hotelRows}
-          <tr class="subtotal-row"><td>酒店合计</td><td></td><td></td><td>¥${r.hotelTotalCost.toLocaleString()}</td></tr>
-
-          <tr style="background:#fdf6ed;font-weight:700;"><td colspan="4" style="color:var(--primary);padding:10px 12px;">🚗 车辆（全部由成人承担）</td></tr>
-          ${carRows}
-          <tr class="subtotal-row"><td>车辆合计</td><td></td><td></td><td>¥${r.carTotalCost.toLocaleString()}</td></tr>
-
-          <tr style="background:#fdf6ed;font-weight:700;"><td colspan="4" style="color:var(--primary);padding:10px 12px;">🚙 司机（全部由成人承担）</td></tr>
-          ${driverRows}
-          <tr class="subtotal-row"><td>司机合计</td><td></td><td></td><td>¥${r.driverTotalCost.toLocaleString()}</td></tr>
-
-          <tr style="background:#fdf6ed;font-weight:700;"><td colspan="4" style="color:var(--primary);padding:10px 12px;">🧑‍💼 管家</td></tr>
-          ${butlerRows}
-          <tr class="subtotal-row"><td>管家合计</td><td></td><td></td><td>¥${r.butlerTotalCost.toLocaleString()}</td></tr>
-
-          <tr style="background:#fdf6ed;font-weight:700;"><td colspan="4" style="color:var(--primary);padding:10px 12px;">🍽 餐饮（按人按餐）</td></tr>
-          ${mealRows}
-
-          <tr style="background:#fdf6ed;font-weight:700;"><td colspan="4" style="color:var(--primary);padding:10px 12px;">🎯 活动</td></tr>
-          ${actRows}
-          ${r.adultActivityCost > 0 ? `<tr class="subtotal-row"><td>活动合计</td><td></td><td></td><td>¥${r.adultActivityCost.toLocaleString()}/人</td></tr>` : ''}
-
-          <tr style="background:#fdf6ed;font-weight:700;"><td colspan="4" style="color:var(--primary);padding:10px 12px;">🛡 保险 & 零食</td></tr>
-          <tr><td>保险</td><td>全程</td><td>¥${r.insurance}/人</td><td>¥${r.insurance}</td></tr>
-          <tr><td>零食</td><td>全程</td><td>¥${r.snack}/人</td><td>¥${r.snack}</td></tr>
-
-          <tr class="subtotal-row"><td>成人成本合计</td><td></td><td></td><td>¥${r.adultCost.toLocaleString()}</td></tr>
-          <tr class="final-row"><td>成人打包价</td><td>÷${(r.sc.costRate * 100)}%${r.discount < 1 ? `×${Math.round(r.discount * 100)}%` : ''}</td><td></td><td><strong>¥${r.adultPriceFinal.toLocaleString()}/人</strong></td></tr>
+          <tr class="total-row"><td>酒店合计（${r.totalNights}晚）</td><td></td><td></td><td>${r.hotelTotalCost.toFixed(2)}</td><td></td></tr>
+          <tr style="background:#fdf6ed;"><td colspan="5" style="font-weight:700;color:var(--primary);padding:14px 12px;">🚗 车辆 & 司机</td></tr>
+          <tr><td>车辆</td><td></td><td>${r.carCost.toFixed(2)}</td><td>${(r.carCost/r.adultCount).toFixed(2)}</td><td style="font-size:12px;color:#888;">成人平摊</td></tr>
+          <tr><td>司机</td><td>${r.carDays}天 × ${r.driverDaily}</td><td>${r.driverDaily}</td><td>${(r.driverCost/r.adultCount).toFixed(2)}</td><td style="font-size:12px;color:#888;">成人平摊</td></tr>
+          <tr class="total-row"><td>车司合计</td><td></td><td></td><td>${r.carDriverTotal.toFixed(2)}</td><td></td></tr>
+          ${butlerSection}
+          <tr style="background:#fdf6ed;"><td colspan="5" style="font-weight:700;color:var(--primary);padding:14px 12px;">📦 人均元素</td></tr>
+          <tr><td>活动</td><td></td><td>${r.activityCost}</td><td>${r.activityCost}</td><td style="font-size:12px;color:#888;">儿童同价</td></tr>
+          <tr><td>餐饮</td><td></td><td>${r.foodCost}</td><td>${r.foodCost}</td><td style="font-size:12px;color:#888;">儿童按年龄打折</td></tr>
+          <tr><td>保险</td><td></td><td>${r.insuranceCost}</td><td>${r.insuranceCost}</td><td style="font-size:12px;color:#888;">人均</td></tr>
+          <tr><td>零食</td><td></td><td>${r.snackCost}</td><td>${r.snackCost}</td><td style="font-size:12px;color:#888;">人均</td></tr>
+          <tr class="total-row"><td>成人成本合计</td><td></td><td></td><td>${r.adultTotalCost.toFixed(2)}</td><td></td></tr>
+          <tr class="price-row"><td>÷ 成本率 ${(r.seasonConfig.costRate*100).toFixed(1)}%${r.discount < 1 ? ` × 预售${Math.round(r.discount*100)}%` : ''}</td><td></td><td></td><td>= <strong>¥${r.adultPriceFinal.toLocaleString()}</strong></td><td style="font-size:12px;">打包价</td></tr>
+          <tr style="background:#f8f8f8;font-size:11px;color:#888;">
+            <td colspan="5" style="padding:6px 12px;">
+              <strong>利润率构成：</strong>集团分摊与息税率 <span style="color:#27ae60;">${(r.rateConfig.overheadRate*100).toFixed(0)}%</span>
+              + 基础成本率 <span style="color:#27ae60;">${(r.rateConfig.baseCostRate*100).toFixed(0)}%</span>
+              − 季节成本率 <span style="color:#e74c3c;">${(r.seasonConfig.seasonalRate*100).toFixed(1)}%</span>
+              = 利润率 <span style="color:#c0392b;">${(r.seasonConfig.profitRate*100).toFixed(1)}%</span>
+              | 成本率 = 1 − 利润率 = <strong>${(r.seasonConfig.costRate*100).toFixed(1)}%</strong>
+            </td>
+          </tr>
+          ${childHTML}
         </tbody>
       </table>
     </div>
-
-    ${childHTML}
-
     <div class="card"><h3>⚠️ 注意事项</h3><ul class="notice-list">${noticeHTML}</ul></div>
-
-    <div style="text-align:center;color:#bbb;font-size:11px;margin-top:32px;padding-top:16px;border-top:1px solid #eee;">
-      松赞产品计价工具 v2 · ${new Date().toLocaleDateString('zh-CN')} · 仅供内部参考
-    </div>
-  `;
+    <div style="text-align:center;color:#bbb;font-size:12px;margin-top:32px;padding-top:16px;border-top:1px solid #eee;">
+      松赞产品计价工具 · ${new Date().toLocaleDateString('zh-CN')} · 仅供内部参考
+    </div>`;
 }
 
-// ============================================================
-// 初始化
-// ============================================================
+// ===== 初始化 =====
 document.getElementById('routeLine').addEventListener('change', updateDiscountOptions);
-document.getElementById('transferType').addEventListener('change', updateCarDays);
+document.getElementById('carCost').addEventListener('input', updateCarDriverDisplay);
+document.getElementById('driverCost').addEventListener('input', updateCarDriverDisplay);
+document.getElementById('butlerCost').addEventListener('input', updateCarDriverDisplay);
 
 renderTemplates();
+renderSeasonGrid();
 parseRouteCode();
-updateCarDays();
-updateDiscountOptions();
-calcMealTotal();
-addCar(); // 默认加一辆车
-
-// 设置默认折扣选项
-setTimeout(() => updateDiscountOptions(), 100);
+toggleChildFields();
+updateCarDriverDisplay();
 </script>
-
-<!-- 活动元素数据列表 -->
-<datalist id="activityElements">
-<option value="普洱山问茶"/>
-<option value="晨观云海"/>
-<option value="困鹿山皇家贡茶园"/>
-<option value="南岛河的咖啡香"/>
-<option value="庭院棒球"/>
-<option value="绝版木刻"/>
-<option value="茶庵堂茶马古道徒步"/>
-<option value="镇沅黑陶制作"/>
-<option value="逛菜场"/>
-<option value="大厨带逛菜市场"/>
-<option value="那柯里古镇"/>
-<option value="基诺山雨林A线"/>
-<option value="基诺山雨林B线"/>
-<option value="中科院植物园研学活动"/>
-<option value="中科院植物园西区"/>
-<option value="野象谷常规浏览"/>
-<option value="遇见亚洲象"/>
-<option value="翁基布朗族古寨"/>
-<option value="糯干傣族古寨"/>
-<option value="畋野雨林徒步"/>
-<option value="咖啡时光"/>
-<option value="小布骑行"/>
-<option value="野鸭塘咖啡"/>
-<option value="大研古镇"/>
-<option value="文笔山"/>
-<option value="东巴书院"/>
-<option value="植物魔法"/>
-<option value="植物染手作体验"/>
-<option value="虎跳峡景区游览"/>
-<option value="虎跳峡高路徒步"/>
-<option value="寻访洛克故居"/>
-<option value="束河古镇"/>
-<option value="白沙古镇"/>
-<option value="普济寺寻幽之旅"/>
-<option value="纳西古乐演出"/>
-<option value="白水台景区游览"/>
-<option value="丽江瓦猫手作体验"/>
-<option value="带逛菜市场"/>
-<option value="玉龙雪山徒步"/>
-<option value="九十九龙潭徒步"/>
-<option value="荒野之国"/>
-<option value="纳西打跳"/>
-<option value="纳西老屋东巴文化体验"/>
-<option value="行云流水香道"/>
-<option value="石鼓户外初探体验"/>
-<option value="阿纳果徒步"/>
-<option value="达摩祖师洞转经"/>
-<option value="哈达村食材寻访"/>
-<option value="邂逅滇金丝猴"/>
-<option value="塔城村庄漫步"/>
-<option value="塔城风物"/>
-<option value="四季野食"/>
-<option value="塔城野炊"/>
-<option value="稻田鱼捕捞体验"/>
-<option value="塔城泳池BBQ"/>
-<option value="同乐傈僳族家访"/>
-<option value="柯那村野餐"/>
-<option value="巴珠徒步"/>
-<option value="塔城麦浪野餐"/>
-<option value="喜洲漫游"/>
-<option value="喜洲甲马体验"/>
-<option value="周城蓝续扎染"/>
-<option value="沙溪古镇"/>
-<option value="石钟山石窟"/>
-<option value="尼西土陶手作"/>
-<option value="松赞林寺朝圣之旅"/>
-<option value="藏家宴"/>
-<option value="藏家体验"/>
-<option value="松赞BBQ"/>
-<option value="指尖梵香"/>
-<option value="晨间静心冥想"/>
-<option value="唐卡绘画"/>
-<option value="隆净美术馆"/>
-<option value="纳帕海观鸟"/>
-<option value="纳帕海环湖"/>
-<option value="后山徒步"/>
-<option value="碧沽天池"/>
-<option value="普达措"/>
-<option value="石卡雪山"/>
-<option value="天宝雪山徒步"/>
-<option value="千湖山徒步"/>
-<option value="青稞醉人"/>
-<option value="小中甸村落游览"/>
-<option value="牧场漫步与松茸野餐"/>
-<option value="年夜饭"/>
-<option value="巴拉格宗"/>
-<option value="无底湖野餐"/>
-<option value="藏地草原时光"/>
-<option value="松赞博物馆"/>
-<option value="藏药草本金刚锤"/>
-<option value="藏文书法体验"/>
-<option value="ATV越野"/>
-<option value="越野摩托"/>
-<option value="纳帕海骑行"/>
-<option value="场地马术"/>
-<option value="野骑松赞"/>
-<option value="探秘星空"/>
-<option value="草原传统射箭"/>
-<option value="藏药甘露足浴"/>
-<option value="藏式酥油深层排毒"/>
-<option value="七星雪滑雪场"/>
-<option value="冲古寺"/>
-<option value="卓玛拉措"/>
-<option value="洛绒牛场"/>
-<option value="五色海"/>
-<option value="青蛙海"/>
-<option value="三神山徒步"/>
-<option value="央迈勇日出"/>
-<option value="舒缓足部按摩"/>
-<option value="玛尼石彩绘"/>
-<option value="松赞绿谷山居游览"/>
-<option value="曲尼卡手作体验"/>
-<option value="藏文化拓印手作"/>
-<option value="松赞林寺全景轻徒步"/>
-<option value="松赞林寺全景下午茶"/>
-<option value="高山植物园"/>
-<option value="松赞林寺日照金顶"/>
-<option value="仁安徒步"/>
-<option value="纳帕海骑行"/>
-<option value="松赞林寺格西"/>
-<option value="尼丁徒步野餐"/>
-<option value="堆措卡原始森林徒步"/>
-<option value="东竹林寺"/>
-<option value="金沙江大拐弯"/>
-<option value="传统手作木碗体验"/>
-<option value="水边寺探幽"/>
-<option value="藏香手作体验"/>
-<option value="金沙江漂流"/>
-<option value="奔子栏酒庄品酒"/>
-<option value="古龙普徒步"/>
-<option value="翁甲寺"/>
-<option value="擦擦体验制作"/>
-<option value="画木碗"/>
-<option value="奔子栏益西木碗"/>
-<option value="白马雪山保护区徒步"/>
-<option value="印经幡"/>
-<option value="斯农日垂"/>
-<option value="普金牧场"/>
-<option value="探索明永冰川"/>
-<option value="梅里杜鹃林下午茶"/>
-<option value="山居雪山日落主题餐"/>
-<option value="山居牦牛肉餐"/>
-<option value="白马雪山垭口徒步"/>
-<option value="梅里后山采蘑菇"/>
-<option value="梅里彩砂坛城体验"/>
-<option value="遇见神山"/>
-<option value="藏文的秘密"/>
-<option value="高原花卉博物课"/>
-<option value="帕所崩顶"/>
-<option value="神瀑朝圣徒步"/>
-<option value="雨崩冰湖徒步"/>
-<option value="南极洛秘境之旅"/>
-<option value="茨中百年天主教堂"/>
-<option value="寿国寺"/>
-<option value="纪录片观影"/>
-<option value="曲登阁"/>
-<option value="同乐傈僳族村寨"/>
-<option value="崩贡寺转山"/>
-<option value="梅里印象"/>
-<option value="松赞葡萄田参观"/>
-<option value="松赞葡萄田野餐"/>
-<option value="茨中酒庄"/>
-<option value="葡萄酒晚宴"/>
-<option value="红酒饼干制作"/>
-<option value="罗迪酒庄参观品鉴"/>
-<option value="藏装体验"/>
-<option value="孔雀山徒步"/>
-<option value="普化寺+唐卡绘画"/>
-<option value="探访雾里村"/>
-<option value="怒毯体验"/>
-<option value="贡当神山"/>
-<option value="野炊"/>
-<option value="黑松露寻香"/>
-<option value="怒江漂流"/>
-<option value="拜访纹面女"/>
-<option value="快乐禅修入门"/>
-<option value="藏芳草本金刚锤"/>
-<option value="五元素香愈"/>
-<option value="芳香颂钵晚安礼"/>
-<option value="芳香七脉轮平衡疗愈"/>
-<option value="千佛图绘"/>
-<option value="芳香手作"/>
-<option value="种子画手作"/>
-<option value="敲拓染手作"/>
-<option value="昆虫观察"/>
-<option value="松果造型"/>
-<option value="押花手作"/>
-<option value="漆油制作体验"/>
-<option value="知子罗"/>
-<option value="老姆登"/>
-<option value="峡谷中的怒音"/>
-<option value="亚坪森林徒步野餐"/>
-<option value="跟厨师逛菜市场"/>
-<option value="老姆登神山步道"/>
-<option value="石月亮硬核登山"/>
-<option value="石月亮溜索"/>
-<option value="石月亮后山茶园漫步"/>
-<option value="能量唤醒晨练"/>
-<option value="桨板呼吸冥想"/>
-<option value="傈僳乐器手作"/>
-<option value="七脉轮能量平衡调理"/>
-<option value="颂钵唱诵疗愈音乐会"/>
-<option value="绘画疗愈"/>
-<option value="尼泊尔古法按摩"/>
-<option value="竹风铃手作"/>
-<option value="草木染"/>
-<option value="石月亮缆车"/>
-<option value="百花岭徒步"/>
-<option value="草果采摘体验"/>
-<option value="麦巴牧场"/>
-<option value="玛尼石手绘"/>
-<option value="尼果寺"/>
-<option value="盐井日游"/>
-<option value="唐蕃石刻"/>
-<option value="布达拉宫之旅"/>
-<option value="大昭寺和八廓街"/>
-<option value="唐卡绘制"/>
-<option value="扎叶巴"/>
-<option value="色拉寺转经"/>
-<option value="小昭寺门票"/>
-<option value="拉萨林卡藏装写真"/>
-<option value="曲德寺壁画艺术之旅"/>
-<option value="雪堆白"/>
-<option value="拉萨过林卡"/>
-<option value="山南桑耶寺"/>
-<option value="山南敏珠林寺"/>
-<option value="山南雍布拉康"/>
-<option value="山南博物馆"/>
-<option value="羊卓雍措"/>
-<option value="甘丹寺"/>
-<option value="拉萨时光下午茶"/>
-<option value="夏寺"/>
-<option value="林周观黑颈鹤"/>
-<option value="文成公主"/>
-<option value="罗布林卡"/>
-<option value="思金拉措"/>
-<option value="纳木措湖"/>
-<option value="羊湖野餐"/>
-<option value="吉本岗艺术之旅"/>
-<option value="白居寺"/>
-<option value="扎什伦布寺"/>
-<option value="尼木吞巴景区"/>
-<option value="卡若拉冰川"/>
-<option value="拉萨藏香制作"/>
-<option value="擦擦制作体验"/>
-<option value="帕崩岗"/>
-<option value="拉萨人的一天"/>
-<option value="海蓝之谜手部护理"/>
-<option value="桑耶寺素食"/>
-<option value="拉萨野餐"/>
-<option value="青朴修行地徒步"/>
-<option value="藏药甘露足浴"/>
-<option value="藏式呼吸法"/>
-<option value="藏药金刚锤手作"/>
-<option value="夏鲁寺"/>
-<option value="晨访次角林寺"/>
-<option value="巴松措新措徒步"/>
-<option value="巴松措"/>
-<option value="巴松措游船"/>
-<option value="巴河漂流"/>
-<option value="杂拉沟漫步"/>
-<option value="转湖徒步"/>
-<option value="仲措徒步"/>
-<option value="国王宝座徒步"/>
-<option value="错高古村游览"/>
-<option value="多钦寺"/>
-<option value="小鸟木雕绘画"/>
-<option value="丙烯石头画"/>
-<option value="叶拓"/>
-<option value="巴松措印经幡"/>
-<option value="巴松措藏民家访"/>
-<option value="晨间冥想"/>
-<option value="颂钵音乐会"/>
-<option value="指尖梵香藏香"/>
-<option value="颂钵冥想"/>
-<option value="闪电公路车"/>
-<option value="电助力山地车"/>
-<option value="四轮越野骑行"/>
-<option value="轻峰骑行"/>
-<option value="马术场地教学"/>
-<option value="湖边野骑"/>
-<option value="朝圣之路"/>
-<option value="皮划艇浆板体验"/>
-<option value="秘境白朗沟"/>
-<option value="桃花节拉如村野餐"/>
-<option value="朱拉沟寻芳"/>
-<option value="冷杉牧场徒步"/>
-<option value="百巴森林轻探险"/>
-<option value="溪边的村民生活"/>
-<option value="秀巴古堡"/>
-<option value="彩砂曼陀罗手工"/>
-<option value="BC营地手工课"/>
-<option value="飞拉达"/>
-<option value="丛林穿越"/>
-<option value="射箭"/>
-<option value="攀岩"/>
-<option value="抱石"/>
-<option value="复古马车体验"/>
-<option value="牧场野餐"/>
-<option value="百巴花草拓印"/>
-<option value="参观乃朗寺院修缮"/>
-<option value="乃朗四馆一中心"/>
-<option value="乃朗谷游牧生活"/>
-<option value="乃朗寺转经道"/>
-<option value="乃朗周边徒步"/>
-<option value="山谷巡护徒步"/>
-<option value="德木寺"/>
-<option value="佛掌沙丘"/>
-<option value="雅鲁藏布江大峡谷"/>
-<option value="响箭"/>
-<option value="多雄拉夏日观花"/>
-<option value="雅江边的玛尼石"/>
-<option value="桃花峡谷漫步"/>
-<option value="赤白村徒步"/>
-<option value="南峰大本营"/>
-<option value="碧波雅江游船"/>
-<option value="藏文书法"/>
-<option value="探访修行洞"/>
-<option value="藏香制作"/>
-<option value="藏药甘露足浴"/>
-<option value="颂钵舒眠SPA"/>
-<option value="修行洞冥想"/>
-<option value="彩砂坛城"/>
-<option value="朵松措"/>
-<option value="来古村门票"/>
-<option value="来古小措"/>
-<option value="深入冰川"/>
-<option value="休登寺落日"/>
-<option value="藏家下午茶"/>
-<option value="峡谷骑马"/>
-<option value="追寻秘境冰川"/>
-<option value="探索仁龙巴冰川"/>
-<option value="探访藏民家"/>
-<option value="朵松措泛舟"/>
-<option value="朵松措观景台"/>
-<option value="多东寺"/>
-<option value="普隆寺朱西冰川"/>
-<option value="嘎朗湖与王宫"/>
-<option value="倾多强巴林寺"/>
-<option value="漫步岗云杉林"/>
-<option value="岗云杉林徒步"/>
-<option value="手工藏纸体验"/>
-<option value="植物手作"/>
-<option value="嘎瓦龙雪山天池徒步"/>
-<option value="则普冰川森林徒步"/>
-<option value="岗村野餐"/>
-<option value="朱西冰川徒步"/>
-<option value="嘎瓦龙草甸野餐"/>
-<option value="倾多寺法会布施"/>
-<option value="树葬"/>
-<option value="朗秋冰川观景台"/>
-<option value="天河漂流"/>
-<option value="白普隆牧场"/>
-<option value="扎西岗村游览"/>
-<option value="喜马拉雅价值观分享"/>
-<option value="藏药甘露足浴"/>
-<option value="喜玛拉雅岩盐热疗"/>
-<option value="晨间禅修课"/>
-<option value="印经幡"/>
-<option value="玛尼石绘画"/>
-<option value="百巴寻水源地"/>
-<option value="前往百巴"/>
-<option value="墨脱果果塘"/>
-<option value="仁青崩寺"/>
-<option value="仁青崩寺转经"/>
-<option value="巴登村"/>
-<option value="翠湖citywalk"/>
-<option value="筇竹寺"/>
-<option value="篆新农贸市场"/>
-<option value="书林街漫步"/>
-<option value="东华农贸市场"/>
-<option value="大观公园"/>
-<option value="斗南花市"/>
-<option value="斗南湿地公园"/>
-<option value="捞鱼河湿地公园"/>
-<option value="圆通寺"/>
-<option value="妙湛寺"/>
-<option value="宝华寺"/>
-<option value="虚宁寺"/>
-<option value="西山森林公园"/>
-<option value="龙头街赶gai"/>
-<option value="虹山有集"/>
-<option value="秘境M60创意园"/>
-<option value="拾翠民艺公园"/>
-<option value="CGK昆明当代美术馆"/>
-<option value="曾孝濂美术馆"/>
-<option value="百草村"/>
-<option value="乐居村"/>
-<option value="云南省博物馆"/>
-<option value="昆明植物园"/>
-<option value="法华寺"/>
-<option value="盘龙寺"/>
-<option value="喜马拉雅晨修"/>
-<option value="藏吉祥非遗拓印"/>
-<option value="古法藏式合香"/>
-<option value="墨中禅"/>
-<option value="彩砂曼陀罗"/>
-<option value="觉知身心瑜伽"/>
-<option value="七脉轮平衡芳香冥想"/>
-<option value="霍尔美助眠冥想"/>
-</datalist>
 </body>
 </html>
