@@ -298,6 +298,7 @@
       <div class="section">
         <div class="section-title">🚗 车辆配置</div>
         <div class="section-sub">选择车型、数量、全程包车费（元/辆/全程）</div>
+        <div id="carTypeHint" style="font-size:11px;color:var(--muted);margin-bottom:6px;">推荐：路虎卫士（普洱选奔驰）</div>
         <div id="carList"></div>
         <div class="add-btn" onclick="addCar()" style="margin-top:8px;">＋ 添加车辆</div>
         <div style="font-size:11px;color:var(--accent);font-weight:600;margin-top:6px;" id="carSectionTotal"></div>
@@ -416,11 +417,11 @@
 // 酒店码表
 // ============================================================
 const HOTEL_DB = {
-  '达': { name: '松赞南迦巴瓦山居', short: '南迦巴瓦', region: '西藏', tag: 'xz', defaultRoomType: '豪华大床房', defaultPrice: 0, canExtraBed: true, notes: '含峡谷门票', transfer: 'paid' },
+  '达': { name: '松赞南迦巴瓦山居', short: '南迦巴瓦', region: '西藏', tag: 'xz', defaultRoomType: '豪华大床房', defaultPrice: 0, canExtraBed: true, notes: '含南迦巴瓦大峡谷门票', transfer: 'paid' },
   '石': { name: '松赞石月亮山居', short: '石月亮', region: '云南', tag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
   '梅': { name: '松赞梅里山居', short: '梅里', region: '云南', tag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
   '香': { name: '松赞香格里拉林卡', short: '香格里拉', region: '云南', tag: 'yn', defaultRoomType: '豪华大床/双床房', defaultPrice: 0, canExtraBed: true, notes: '含松赞林寺门票；免费接送机', transfer: 'free' },
-  '绿': { name: '松赞绿谷山居', short: '绿谷', region: '云南', tag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '免费接送机', transfer: 'free' },
+  '绿': { name: '松赞绿谷山居', short: '绿谷', region: '云南', tag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '免费接送机；默认含松赞博物馆导览', transfer: 'free' },
   '塔': { name: '松赞塔城山居', short: '塔城', region: '云南', tag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
   '奔': { name: '松赞奔子栏山居', short: '奔子栏', region: '云南', tag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
   '丙': { name: '松赞丙中洛山居', short: '丙中洛', region: '云南', tag: 'yn', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '不提供接送机', transfer: 'none' },
@@ -429,7 +430,7 @@ const HOTEL_DB = {
   '拉': { name: '松赞拉萨林卡', short: '拉萨', region: '西藏', tag: 'xz', defaultRoomType: '豪华大床房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
   '日': { name: '日喀则', short: '日喀则', region: '西藏', tag: 'xz', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
   '乃': { name: '松赞乃朗山居', short: '乃朗', region: '西藏', tag: 'xz', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'paid' },
-  '百': { name: '松赞百巴帐篷营地', short: '百巴', region: '西藏', tag: 'xz', defaultRoomType: '双床房（唯一）', defaultPrice: 831.88, canExtraBed: false, notes: '不支持加床', transfer: 'paid' },
+  '百': { name: '松赞百巴帐篷营地', short: '百巴', region: '西藏', tag: 'xz', defaultRoomType: '双床房（唯一）', defaultPrice: 831.88, canExtraBed: false, notes: '不支持加床；儿童新增房间仍享优惠', transfer: 'paid' },
   '来': { name: '松赞来古山居', short: '来古', region: '西藏', tag: 'xz', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '不提供接送机', transfer: 'none' },
   '波': { name: '松赞波密山居', short: '波密', region: '西藏', tag: 'xz', defaultRoomType: '湖景豪华大/双床房', defaultPrice: 653.27, canExtraBed: true, notes: '不提供接送机', transfer: 'none' },
   '墨': { name: '墨脱', short: '墨脱', region: '西藏', tag: 'xz', defaultRoomType: '标准房', defaultPrice: 0, canExtraBed: true, notes: '', transfer: 'none' },
@@ -866,11 +867,38 @@ function setTripType(type) {
   else if (type === 'group') sub.textContent = '主题团形态包含管家服务';
   else sub.textContent = '自由行无管家，可手动添加';
 
-  // 自动添加默认管家
+  // 自动添加默认管家（私享管家/主题团）
   if ((type === 'private' || type === 'group') && state.butlers.length === 0) {
     state.butlers.push({ id: ++_butlerId, count: 1, dailyRate: 400 });
     renderButlers();
   }
+
+  // 移除管家（切换到自由行时）
+  if (type === 'free' && state.butlers.length > 0) {
+    // 保留管家配置，但说明自由行不计管家费用
+  }
+
+  // 车型推荐切换
+  // 主题团默认奔驰商务；私享管家/自由行默认路虎卫士（普洱除外）
+  if (state.cars.length === 0) {
+    // 首次添加车辆时，按产品形态推荐车型
+    // 但不在此自动添加，等待用户手动添加
+  } else {
+    // 已存在车辆时，根据产品形态给出提示（不做强制切换，尊重用户选择）
+  }
+
+  // 自动推荐车型标签
+  const carHint = document.getElementById('carTypeHint');
+  if (carHint) {
+    if (type === 'group') {
+      carHint.textContent = '主题团推荐：奔驰商务（怒江/来古/亚丁需选路虎）';
+      carHint.style.color = 'var(--accent)';
+    } else {
+      carHint.textContent = '推荐：路虎卫士（普洱选奔驰）';
+      carHint.style.color = 'var(--muted)';
+    }
+  }
+
   updateCarDays();
 }
 
@@ -897,8 +925,11 @@ function updateCarDays() {
   const totalNights = state.hotels.reduce((s, h) => s + (h.nights || 0), 0);
   let days;
   if (type === 'free') {
-    days = totalNights + 1 - 0.5;
+    // 自由行：按行程天数核算，不叠加接送机额外天数
+    // 标准：晚数 + 1天（去程+回程各0.5天）
+    days = totalNights + 1;
   } else {
+    // 私享管家/主题团：根据接送机时间叠加天数
     days = totalNights;
     if (transfer === 'am_am' || transfer === 'pm_pm') days += 0.5;
     if (transfer === 'am_pm') days += 1;
@@ -1014,7 +1045,10 @@ function calculate() {
   const driverTotalCost = state.drivers.reduce((s, d) => s + d.count * state.carDays * d.dailyRate, 0);
 
   // ── 4. 管家成本 ────────────────────────────────
-  const butlerTotalCost = state.butlers.reduce((s, b) => s + b.count * state.carDays * b.dailyRate, 0);
+  // 自由行无管家（管家费用仅私享管家/主题团形态计入）
+  const butlerTotalCost = state.tripType === 'free'
+    ? 0
+    : state.butlers.reduce((s, b) => s + b.count * state.carDays * b.dailyRate, 0);
 
   // ── 5. 餐饮成本 ───────────────────────────────
   const adultMealCost = bp * bc + lp * lc + dp * dc;
@@ -1064,14 +1098,23 @@ function calculate() {
     if (!h.canExtraBed && bedType === 'extra') notices.push({ type: 'warn', text: `${h.short}（${h.code}）不支持加床` });
     if (h.notes) notices.push({ type: 'info', text: `${h.short}：${h.notes}` });
   });
-  notices.push({ type: 'ok', text: `车司管计费天数：${state.carDays}天` });
+  notices.push({ type: 'ok', text: `车司管计费天数：${state.carDays}天（${state.tripType === 'free' ? '自由行按行程天数' : '按接送机时间核算'}）` });
+  if (state.tripType === 'free') notices.push({ type: 'info', text: '自由行不计管家费用（无管家服务）' });
   if (childCount > 0) notices.push({ type: 'ok', text: `儿童(${childAge}岁·${bedType === 'extra' ? '加床' : '占床'})不分摊车司管费用` });
   if (adultActivityCost > 0) notices.push({ type: 'info', text: `活动：${adultActivityCost}元/人` });
   if (state.discount < 1) notices.push({ type: 'info', text: `预售${Math.round(state.discount * 100)}%折，原价成人¥${Math.round(adultPrice).toLocaleString()}/人` });
+  // 接送机豁免提示（香格里拉/绿谷/普洱行程首末天无额外行程时）
+  const hasTransferHotel = state.hotels.some(h => h.code === '香' || h.code === '绿' || h.code === '普');
+  if (hasTransferHotel && (state.tripType === 'private' || state.tripType === 'group')) {
+    notices.push({ type: 'info', text: '香格里拉/绿谷/普洱行程：首末天仅接送机则豁免接送机费' });
+  }
+  if (state.tripType === 'free') {
+    notices.push({ type: 'info', text: '自由行默认-0.5天计价（不含接送机服务）' });
+  }
 
   // ── 渲染 ──────────────────────────────────────
   renderResult({
-    sc, adultCount, childCount, childAge, bedType,
+    sc, tripType: state.tripType, adultCount, childCount, childAge, bedType,
     totalNights, totalDays: state.routeDays,
     hotels: state.hotels, hotelTotalCost,
     cars: state.cars, carTotalCost,
@@ -1112,8 +1155,8 @@ function renderResult(r) {
 
   // 管家行
   const butlerRows = r.butlers.length > 0 ? r.butlers.map(b =>
-    `<tr><td>🧑‍💼 ${b.type}</td><td>×${b.count}人</td><td>¥${b.dailyRate}/人/天×${state.carDays}天</td><td>¥${(b.count * state.carDays * b.dailyRate).toLocaleString()}</td></tr>`
-  ).join('') : `<tr><td colspan="4" style="color:var(--muted);font-size:12px;">无管家</td></tr>`;
+    `<tr><td>🧑‍💼 管家</td><td>×${b.count}人</td><td>¥${b.dailyRate}/人/天×${state.carDays}天</td><td>¥${(b.count * state.carDays * b.dailyRate).toLocaleString()}</td></tr>`
+  ).join('') : `<tr><td colspan="4" style="color:var(--muted);font-size:12px;">${r.tripType === 'free' ? '自由行无管家' : '无管家'}</td></tr>`;
 
   // 餐饮行
   const mealRows = `
@@ -1165,9 +1208,9 @@ function renderResult(r) {
 
   document.getElementById('resultArea').innerHTML = `
     <div class="result-header">
-      <h2>${tripLabels[state.tripType]} · ${r.sc.name}计价</h2>
+      <h2>${tripLabels[r.tripType]} · ${r.sc.name}计价</h2>
       <div class="route">${r.hotels.map((h, i) => `<span class="stop">${h.short}</span>${i < r.hotels.length - 1 ? '<span class="arrow">→</span>' : ''}`).join('')}</div>
-      <div class="meta">${r.totalDays}天${r.totalNights}晚 · ${r.adultCount}成人${r.childCount > 0 ? ` + ${r.childCount}儿童` : ''} · 成本率 ${(r.sc.costRate*100).toFixed(1)}%（利润率 ${(r.sc.profitRate*100).toFixed(1)}%）</div>
+      <div class="meta">${r.totalDays}天${r.totalNights}晚 · ${r.adultCount}成人${r.childCount > 0 ? ` + ${r.childCount}儿童` : ''} · ${tripLabels[r.tripType]} · 成本率 ${(r.sc.costRate*100).toFixed(1)}%（利润率 ${(r.sc.profitRate*100).toFixed(1)}%）</div>
     </div>
 
     <div class="card">
@@ -1211,13 +1254,13 @@ function renderResult(r) {
           ${carRows}
           <tr class="subtotal-row"><td>车辆合计</td><td></td><td></td><td>¥${r.carTotalCost.toLocaleString()}</td></tr>
 
-          <tr style="background:#fdf6ed;font-weight:700;"><td colspan="4" style="color:var(--primary);padding:10px 12px;">🚙 司机（全部由成人承担）</td></tr>
+          <tr style="background:#fdf6ed;font-weight:700;"><td colspan="4" style="color:var(--primary);padding:10px 12px;">🚙 司机</td></tr>
           ${driverRows}
           <tr class="subtotal-row"><td>司机合计</td><td></td><td></td><td>¥${r.driverTotalCost.toLocaleString()}</td></tr>
 
-          <tr style="background:#fdf6ed;font-weight:700;"><td colspan="4" style="color:var(--primary);padding:10px 12px;">🧑‍💼 管家</td></tr>
+          <tr style="background:#fdf6ed;font-weight:700;"><td colspan="4" style="color:var(--primary);padding:10px 12px;">🧑‍💼 管家${r.tripType === 'free' ? '（自由行不计管家费）' : ''}</td></tr>
           ${butlerRows}
-          <tr class="subtotal-row"><td>管家合计</td><td></td><td></td><td>¥${r.butlerTotalCost.toLocaleString()}</td></tr>
+          ${r.butlerTotalCost > 0 ? `<tr class="subtotal-row"><td>管家合计</td><td></td><td></td><td>¥${r.butlerTotalCost.toLocaleString()}</td></tr>` : ''}
 
           <tr style="background:#fdf6ed;font-weight:700;"><td colspan="4" style="color:var(--primary);padding:10px 12px;">🍽 餐饮（按人按餐）</td></tr>
           ${mealRows}
@@ -1268,6 +1311,18 @@ updateCarDays();
 updateDiscountOptions();
 calcMealTotal();
 addCar(); // 默认加一辆车
+
+// 初始化车型推荐提示（基于当前产品形态）
+const initCarHint = document.getElementById('carTypeHint');
+if (initCarHint) {
+  if (state.tripType === 'group') {
+    initCarHint.textContent = '主题团推荐：奔驰商务（怒江/来古/亚丁需选路虎）';
+    initCarHint.style.color = 'var(--accent)';
+  } else {
+    initCarHint.textContent = '推荐：路虎卫士（普洱选奔驰）';
+    initCarHint.style.color = 'var(--muted)';
+  }
+}
 
 // 设置默认折扣选项
 setTimeout(() => updateDiscountOptions(), 100);
