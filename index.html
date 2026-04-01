@@ -85,15 +85,21 @@
   .item-total { font-size: 11px; color: var(--accent); font-weight: 600; margin-left: 36px; }
 
   /* 活动下拉选择 */
-  .act-dropdown { position: relative; flex: 1; }
+  .act-dropdown { position: relative; flex: 1; display: flex; align-items: center; }
   .act-dropdown-input {
-    width: 100%; padding: 4px 28px 4px 7px;
+    width: 100%; padding: 4px 24px 4px 7px;
     border: 1px solid #e0dcd5; border-radius: 6px;
     font-size: 12px; box-sizing: border-box;
-    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 8px center;
-    cursor: pointer; appearance: none; -webkit-appearance: none;
   }
   .act-dropdown-input:focus { outline: none; border-color: var(--primary); }
+  .act-clear-btn {
+    position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+    width: 16px; height: 16px; border: none; background: #ccc;
+    color: #fff; border-radius: 50%; font-size: 11px; line-height: 16px;
+    text-align: center; cursor: pointer; display: none; z-index: 2;
+  }
+  .act-clear-btn.show { display: block; }
+  .act-clear-btn:hover { background: #999; }
   .act-dropdown-list {
     display: none; position: absolute; top: calc(100% + 2px); left: 0; right: 0;
     max-height: 220px; overflow-y: auto; background: #fff;
@@ -948,6 +954,9 @@ function renderActivities() {
             onfocus="showActDropdown(${a.id}, this)"
             oninput="filterActDropdown(${a.id}, this.value, ${i})"
             onblur="hideActDropdown(${a.id})">
+          <button type="button" class="act-clear-btn${a.name ? ' show' : ''}"
+            onclick="clearActInput(${a.id}, ${i})"
+            title="清空">✕</button>
           <div class="act-dropdown-list" id="act-drop-list-${a.id}"></div>
         </div>
         <button class="item-del" onclick="removeActivity(${a.id})">✕</button>
@@ -976,7 +985,8 @@ function showActDropdown(id, input) {
 
 function filterActDropdown(id, query, idx) {
   const listEl = document.getElementById('act-drop-list-' + id);
-  const inputEl = listEl.previousElementSibling;
+  const btn = document.querySelector(`#act-drop-${id} .act-clear-btn`);
+  if (query) { if (btn) btn.classList.add('show'); } else { if (btn) btn.classList.remove('show'); }
   if (!listEl) return;
   const q = query.trim().toLowerCase();
   const filtered = q
@@ -993,15 +1003,12 @@ function filterActDropdown(id, query, idx) {
 }
 
 function selectActItem(name, id, idx) {
-  // 找到对应的activity
   const act = state.activities.find(a => a.id === id);
-  if (act) {
-    act.name = name;
-    // 同步更新input
-    const input = document.querySelector(`#act-drop-${id} .act-dropdown-input`);
-    if (input) input.value = name;
-  }
-  // 关闭下拉
+  if (act) act.name = name;
+  const input = document.querySelector(`#act-drop-${id} .act-dropdown-input`);
+  if (input) input.value = name;
+  const btn = document.querySelector(`#act-drop-${id} .act-clear-btn`);
+  if (btn) { if (name) btn.classList.add('show'); else btn.classList.remove('show'); }
   const listEl = document.getElementById('act-drop-list-' + id);
   if (listEl) listEl.classList.remove('open');
   renderActivities();
@@ -1012,6 +1019,15 @@ function hideActDropdown(id) {
     const listEl = document.getElementById('act-drop-list-' + id);
     if (listEl) listEl.classList.remove('open');
   }, 200);
+}
+
+function clearActInput(id, idx) {
+  state.activities[idx].name = '';
+  const input = document.querySelector(`#act-drop-${id} .act-dropdown-input`);
+  if (input) { input.value = ''; input.focus(); }
+  const btn = document.querySelector(`#act-drop-${id} .act-clear-btn`);
+  if (btn) btn.classList.remove('show');
+  filterActDropdown(id, '', idx);
 }
 
 // ============================================================
